@@ -1,0 +1,17 @@
+DesiredVelocity = 0
+    DesiderAcceleration = 0
+    DesiderDeceleration = 0
+    CurveSpeed = 0
+    ObserveSpeedLimit = 0
+    DistanceKeeping = 0
+    LaneKeeping = 0
+    SpeedKeeping = 0
+    LaneChangeDynamic = 0
+    UrgeToOvertake = 0
+    KeepRightRule = 0
+    RespondToTaligating = 0
+    ForesightDistance = 0
+    SteeringIndicator = 0
+    UseOfIndicator = 0
+    ObeyTrafficSigns = True
+    ObeyTrafficLights = True
