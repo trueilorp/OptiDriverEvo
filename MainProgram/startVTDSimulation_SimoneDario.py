@@ -9,13 +9,18 @@ from src.utils import DRIVER_PARAMS_LABEL_TO_NAME, read_configurations, configur
 from src.adams import shrink_results
 from src.adams import TooManyResultsError, generate_post_processing_files
 
+logger = logging.getLogger('root')
 ###START PROGRAM###
 
 def scriptVTD ():
-    launching_dir = os.getcwd() #setta la variabile launching_dir alla current working directory
+    default_directory = '/home/udineoffice/Desktop/SimulationLauncher'
+    if os.getcwd() != default_directory:
+        os.chdir(default_directory)
 
+    launching_dir = os.getcwd() #setta la variabile launching_dir alla current working directory
+    
     try: #eccezione che mi manda un messaggio nel caso non venga trovata una configurazione del driver/scenario
-        configuration, sim_configuration, driver_configuration = read_configurations(['config.json', 'sim_config.json', 'driver_config.json'])
+        configuration, sim_configuration, driver_configuration = read_configurations(['config.json', 'sim_config.json', 'driver_config_variabile.json'])
     except FileNotFoundError as e:
         print('Missing configuration file.\n{error}'.format(error=str(e)))
         sys.exit(-1)
@@ -29,7 +34,6 @@ def scriptVTD ():
 
     #configurazione dei logger 
     configure_loggers(log_folder, app_start)
-    logger = logging.getLogger('root')
 
     #togliere i file che si creano dopo la simulazione all'interno della cartella tmp, sono i file delle finestre colorate che si aprono
     for filename in glob.glob(os.path.join('/tmp', 'taskRec_*.txt')):
@@ -38,7 +42,7 @@ def scriptVTD ():
             os.remove(filename)            
         
     #copia i seguenti file nella cartella output_folders, per avere in ogni cartella di output anche la configurazione corrispondente
-    copy_files(['sim_config.json', 'driver_config.json'], output_folder)
+    copy_files(['sim_config.json', 'driver_config_variabile.json'], output_folder)
 
     os.chdir(os.environ['VTD_ROOT'])
 
@@ -72,7 +76,7 @@ def scriptVTD ():
             logger.info('Opening VTD') #apro VTD 
             vtd_launch_cmd =[os.path.join(os.environ['VTD_ROOT'], 'bin', 'vtdStart.sh'), '--project=' + os.environ['SM_SETUP'], '--autoConfig'] #creo il comando per lanciare VTD, come quando lo faccio dalla shell, ovvero digito il percorso, poi il programma, e ci aggiungo anche gia il setup con il quale voglio lanciarlo
             logger.debug('Launch command -> ' + ' '.join(vtd_launch_cmd)) #lancio VTD con autoConfig/Standard.noIG  --setup=Standard.noIG
-            print(vtd_launch_cmd) #['/opt/MSC.Software/VTD.2023.2/bin/vtdStart.sh', '--project=SD_Project', '--autoConfig']
+            #['/opt/MSC.Software/VTD.2023.2/bin/vtdStart.sh', '--project=SD_Project', '--autoConfig']
             vtd_process = subprocess.Popen(vtd_launch_cmd, stdout=vtd_out, stderr=vtd_out) #reindirizzamento standard output e standard error
             logger.debug('VTD instance -> ' + str(vtd_process.pid)) #vtd_process l'ho definita sopra, con .pid prendo il PID del processo
             time.sleep(seconds_between_processes)
@@ -131,7 +135,6 @@ def scriptVTD ():
             
             #a questo punto lo scenario e` pronto
 
-        
             logger.info('Start VTD simulation')
             sim_start_time = datetime.datetime.now() #prendo il tempo di inizio simulazione 
 
@@ -141,6 +144,7 @@ def scriptVTD ():
                 .wait().append_str('"<SimCtrl> <InitDone place="checkInitConfirmation"/> </SimCtrl>"')
             if driver_config_name and driver_config_name in driver_configuration.keys(): #definisco il driver
                 command = command.no_wait().cmd('Player', {'name': 'Ego'}, SCPCommand().self_closed_tag('DriverBehaviorNormalized', {DRIVER_PARAMS_LABEL_TO_NAME[key]: value for key, value in driver_configuration[driver_config_name].items() if DRIVER_PARAMS_LABEL_TO_NAME[key] != ''}))
+                #va ad impostare tutti i parametri del driver usando un file python che passa dall'etichetta al nome del parametro   
             command = command.no_wait().sim_ctrl(SCPCommand().self_closed_tag('Start')) #lancio la simulazione 
             
             launch_scp(command, scp_out, scp_out, 0)
@@ -194,7 +198,7 @@ def scriptVTD ():
 
             ##os.path.basename(fmu_path),
             
-            # Prelevo timSim e LaneOffsetMedio dal file csv
+            # Prelevo timeSim e LaneOffsetMedio dal file csv
             csv_file = os.path.join("/home/udineoffice/Desktop/SimulationLauncher/outputs", sim_output_folder, ".debug/Dati_rdbSniffer.csv")
 
             TimeSimulation = SelectFromCSV.TimeSimFromCSV(csv_file) #devo passargli il percorso cosi riesce a pescare il csv
@@ -243,12 +247,14 @@ def scriptVTD ():
             logger.info('Sim done\n\n')
             logger.info('Copying all the taskrec logs')
             for filename in glob.glob(os.path.join('/tmp', 'taskRec_*.txt')):
-                logger.info('Copying: '+filename+' into '+ sim_output_debug_folder)
+                #logger.info('Copying: '+filename+' into '+ sim_output_debug_folder) #copia i file di log nella cartella output
                 shutil.copy(filename, sim_output_debug_folder)
-                    
-        #logger.info('Shrinking result files')
+
+        #logger.info('Shrinking result files') perche i dati pesano troppo quindi ne prende un po a campione 
         #shrink_results(output_folder)
         #logger.info('Generating plots and pictures')
         #generate_post_processing_files(output_folder)
-        
     logger.info('All done!')
+
+    return (TimeSimulation, MediaLaneOffset)
+    
