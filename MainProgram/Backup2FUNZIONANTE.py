@@ -10,36 +10,40 @@ from src.adams import shrink_results
 from src.adams import TooManyResultsError, generate_post_processing_files
 
 logger = logging.getLogger('root')
-app_start = datetime.datetime.fromtimestamp(time.time()) #registra il modo in cui uno script viene avviato
-launching_dir = os.getcwd() #setta la variabile launching_dir alla current working directory
-configuration, sim_configuration = read_configurations(['config.json', 'sim_config.json'])
-log_folder, output_folder = make_output_folders([configuration['logFolder'], configuration['outputFolder']], launching_dir, app_start)    
-configure_loggers(log_folder, app_start)
-logger.propagate = False #per evitare che si duplichino i logger
+logger.propagate = False
 ###START PROGRAM###
 
 def scriptVTD (i):
     default_directory = '/home/udineoffice/Desktop/SimulationLauncher'
     if os.getcwd() != default_directory:
         os.chdir(default_directory)
+
+    launching_dir = os.getcwd() #setta la variabile launching_dir alla current working directory
     
     try: #eccezione che mi manda un messaggio nel caso non venga trovata una configurazione del driver/scenario
         configuration, sim_configuration, driver_configuration = read_configurations(['config.json', 'sim_config.json', 'driver_config_variabile.json'])
     except FileNotFoundError as e:
         print('Missing configuration file.\n{error}'.format(error=str(e)))
-        sys.exit(-1)  
+        sys.exit(-1)
+
+
+    app_start = datetime.datetime.fromtimestamp(time.time()) #registra il modo in cui uno script viene avviato    
 
     ## CREO LE CARTELLE DI OUTPUT CON LA FUNZIONE MAKE OUTPUT FOLDERS
     #crea una cartella per gli output ricevendo in input configuration che e la var. definita sopra
+    log_folder, output_folder = make_output_folders([configuration['logFolder'], configuration['outputFolder']], launching_dir, app_start)
+
+    #configurazione dei logger 
+    configure_loggers(log_folder, app_start)
 
     #togliere i file che si creano dopo la simulazione all'interno della cartella tmp, sono i file delle finestre colorate che si aprono
     for filename in glob.glob(os.path.join('/tmp', 'taskRec_*.txt')):
         if os.path.exists(filename):
-            #logger.info('Clean: deleting '+ filename)
+            logger.info('Clean: deleting '+ filename)
             os.remove(filename)            
         
     #copia i seguenti file nella cartella output_folders, per avere in ogni cartella di output anche la configurazione corrispondente
-    #copy_files(['sim_config.json', 'driver_config_variabile.json'], output_folder)
+    copy_files(['sim_config.json', 'driver_config_variabile.json'], output_folder)
 
     os.chdir(os.environ['VTD_ROOT'])
 
@@ -68,7 +72,7 @@ def scriptVTD (i):
             logger.info('Killing previous instances...') #chiudo se ci sono altre simulazioni in corso, uso vtdStop.sh
             with subprocess.Popen(os.path.join(os.environ['VTD_ROOT'], 'bin', 'vtdStop.sh'), stdout=subprocess.PIPE, shell=True) as p: #reindirizzo lo standard output in una pipe cosi posso catturarlo
                 logger.info('{p_out}'.format(p_out=p.stdout.read().decode('utf-8')))
-            #time.sleep(seconds_between_processes)
+            time.sleep(seconds_between_processes)
 
             logger.info('Opening VTD') #apro VTD 
             vtd_launch_cmd =[os.path.join(os.environ['VTD_ROOT'], 'bin', 'vtdStart.sh'), '--project=' + os.environ['SM_SETUP'], '--autoConfig'] #creo il comando per lanciare VTD, come quando lo faccio dalla shell, ovvero digito il percorso, poi il programma, e ci aggiungo anche gia il setup con il quale voglio lanciarlo
@@ -146,13 +150,10 @@ def scriptVTD (i):
             
             launch_scp(command, scp_out, scp_out, 0)
 
-            sim_output_folder = os.path.join(output_folder, scenario_file[:-4], driver_config_name, str(i) if 'driverConfigName' in sim_params.keys() else ''.join(random.choice(string.ascii_letters) for _ in range(6)))
+            sim_output_folder = os.path.join(output_folder, scenario_file[:-4], driver_config_name if 'driverConfigName' in sim_params.keys() else ''.join(random.choice(string.ascii_letters) for _ in range(6)))
             logger.info('Creating output folder -> ' + str(sim_output_folder))
             sim_output_debug_folder = os.path.join(sim_output_folder, '.debug')
             os.makedirs(sim_output_debug_folder)
-
-            shutil.copy("/home/udineoffice/Desktop/SimulationLauncher/sim_config.json", sim_output_debug_folder)
-            shutil.copy("/home/udineoffice/Desktop/SimulationLauncher/driver_config_variabile.json", sim_output_debug_folder)
 
             rdbSniffer_output_file = os.path.join(sim_output_debug_folder, 'Dati_rdbSniffer.csv')
             logger.info('Creating RDBSniffer output file -> ' + str(rdbSniffer_output_file))
@@ -176,7 +177,7 @@ def scriptVTD (i):
                 launch_scp(command, out_handler=scp_out, error_handler=scp_out, timeout_min=int(configuration['simulationTimeoutMinutes']))
                 logger.info('Scenario terminated')
                 sim_completed = True #simulazione completata
-            except subprocess.TimeoutExpired as e: #dopo 20 minuti killa la simulazione 
+            except subprocess.TimeoutExpired as e: #qui uso le eccezioni per catturare errori nel caso ci fossero
                 logger.error('Simulation {sim_name} has timed out!'.format(sim_name=sim_name))
                 logger.debug(str(e))
             finally:
