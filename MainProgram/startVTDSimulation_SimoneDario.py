@@ -72,7 +72,7 @@ def scriptVTD (i):
 
             logger.info('Opening VTD') #apro VTD 
             vtd_launch_cmd =[os.path.join(os.environ['VTD_ROOT'], 'bin', 'vtdStart.sh'), '--project=' + os.environ['SM_SETUP'], '--autoConfig'] #creo il comando per lanciare VTD, come quando lo faccio dalla shell, ovvero digito il percorso, poi il programma, e ci aggiungo anche gia il setup con il quale voglio lanciarlo
-            logger.debug('Launch command -> ' + ' '.join(vtd_launch_cmd)) #lancio VTD con autoConfig/Standard.noIG  --setup=Standard.noIG
+            logger.debug('Launch command -> ' + ' '.join(vtd_launch_cmd)) #lancio VTD con autoConfig/Standard.noIG  --setup=Standard.noIG --autoConfig
             #['/opt/MSC.Software/VTD.2023.2/bin/vtdStart.sh', '--project=SD_Project', '--autoConfig']
             vtd_process = subprocess.Popen(vtd_launch_cmd, stdout=vtd_out, stderr=vtd_out) #reindirizzamento standard output e standard error
             logger.debug('VTD instance -> ' + str(vtd_process.pid)) #vtd_process l'ho definita sopra, con .pid prendo il PID del processo
@@ -178,7 +178,7 @@ def scriptVTD (i):
                 sim_completed = True #simulazione completata
             except subprocess.TimeoutExpired as e: #dopo 20 minuti killa la simulazione 
                 logger.error('Simulation {sim_name} has timed out!'.format(sim_name=sim_name))
-                logger.debug(str(e))
+                logger.debug(str(e)) 
             finally:
                 logger.info('Killing VTD...')
                 with subprocess.Popen(os.path.join(os.environ['VTD_ROOT'], 'bin', 'vtdStop.sh'), stdout=subprocess.PIPE, shell=True) as p:
@@ -244,7 +244,7 @@ def scriptVTD (i):
                     f.write('{key}={value}\n'.format(key=key, value=value))
                 f.write('Sim duration={duration}\n'.format(duration=duration))
 
-            logger.info('Sim done\n\n')
+            logger.info('Sim' + str(i) + 'done\n\n')
             logger.info('Copying all the taskrec logs')
             for filename in glob.glob(os.path.join('/tmp', 'taskRec_*.txt')):
                 #logger.info('Copying: '+filename+' into '+ sim_output_debug_folder) #copia i file di log nella cartella output
@@ -254,6 +254,6 @@ def scriptVTD (i):
         #shrink_results(output_folder)
         #logger.info('Generating plots and pictures')
         #generate_post_processing_files(output_folder)
-    logger.info('All done!')
+    #logger.info('All done!')
 
     return (TimeSimulation, MediaLaneOffset)
