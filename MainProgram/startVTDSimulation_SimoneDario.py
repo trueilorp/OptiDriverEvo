@@ -29,12 +29,13 @@ def scriptVTD (i):
         print('Missing configuration file.\n{error}'.format(error=str(e)))
         sys.exit(-1)  
 
+    print(driver_configuration)
     ## CREO LE CARTELLE DI OUTPUT CON LA FUNZIONE MAKE OUTPUT FOLDERS
     #crea una cartella per gli output ricevendo in input configuration che e la var. definita sopra
 
     #togliere i file che si creano dopo la simulazione all'interno della cartella tmp, sono i file delle finestre colorate che si aprono
     for filename in glob.glob(os.path.join('/tmp', 'taskRec_*.txt')):
-        if os.path.exists(filename):
+        if os.path.exists(filename): 
             #logger.info('Clean: deleting '+ filename)
             os.remove(filename)            
         
@@ -52,8 +53,9 @@ def scriptVTD (i):
     with open(os.path.join(log_folder, 'vtdStartViaSCP_start.log'), 'w+') as vtd_out,\
         open(os.path.join(log_folder, 'scp.log'), 'w+') as scp_out,\
         open(os.path.join(log_folder, 'scp_monitor.log'), 'w+') as scp_monitor_out,\
-        open(os.path.join(log_folder, 'rdbSniffer.log'), 'w+') as rdb_out: 
-        
+        open(os.path.join(log_folder, 'rdbSniffer.log'), 'w+') as rdb_out,\
+        open(os.path.join(log_folder, 'valutaLaneOffset.log'), 'w+') as vlo_out: 
+
         for sim_name, sim_params in sim_configuration.items(): #nome della simulazione e i suoi parametri
 
             scenario_file, driver_config_name = sim_params['scenarioFile'], sim_params['driverConfigName'] if 'driverConfigName' in sim_params.keys() else None #assegno alle 2 variabili i vari parametri di scenarioFile e driverConfigName che sono presenti in sim_config.json. Se la chiave esiste si assegna il valore, altrimenti no
@@ -71,7 +73,7 @@ def scriptVTD (i):
             #time.sleep(seconds_between_processes)
 
             logger.info('Opening VTD') #apro VTD 
-            vtd_launch_cmd =[os.path.join(os.environ['VTD_ROOT'], 'bin', 'vtdStart.sh'), '--project=' + os.environ['SM_SETUP'], '--autoConfig'] #creo il comando per lanciare VTD, come quando lo faccio dalla shell, ovvero digito il percorso, poi il programma, e ci aggiungo anche gia il setup con il quale voglio lanciarlo
+            vtd_launch_cmd =[os.path.join(os.environ['VTD_ROOT'], 'bin', 'vtdStart.sh'), '--project=' + os.environ['SM_SETUP'], '--autoConfig', '--setup=Standard.noGUInoIG'] #creo il comando per lanciare VTD, come quando lo faccio dalla shell, ovvero digito il percorso, poi il programma, e ci aggiungo anche gia il setup con il quale voglio lanciarlo
             logger.debug('Launch command -> ' + ' '.join(vtd_launch_cmd)) #lancio VTD con autoConfig/Standard.noIG  --setup=Standard.noIG --autoConfig
             #['/opt/MSC.Software/VTD.2023.2/bin/vtdStart.sh', '--project=SD_Project', '--autoConfig']
             vtd_process = subprocess.Popen(vtd_launch_cmd, stdout=vtd_out, stderr=vtd_out) #reindirizzamento standard output e standard error
@@ -162,7 +164,13 @@ def scriptVTD (i):
             logger.debug('Launch command rdb -> ' + ' '.join(rdbSniffer_launch_cmd))
             rdbSniffer_process = subprocess.Popen(rdbSniffer_launch_cmd, stdout=rdb_out, stderr=rdb_out) #reindirizzamento standard output e standard error
             logger.debug('RDB instance -> ' + str(rdbSniffer_process.pid)) #vtd_process l'ho definita sopra, con .pid prendo il PID del processo
-            time.sleep(seconds_between_processes)
+            
+            #Cercare di valutare ad ogni istante il laneOffset
+            '''valutaLaneOffset_cmd = ["python3", "/home/udineoffice/Desktop/SimulationLauncher/valutaLaneOffset.py"]
+            logger.debug('Launch command valuta Lane Offset -> ' + ' '.join(valutaLaneOffset_cmd))
+            valutaLaneOffset_process = subprocess.Popen(valutaLaneOffset_cmd, stdout=vlo_out, stderr=vlo_out) #reindirizzamento standard output e standard error
+            logger.debug('Valuta Lane Offset instance -> ' + str(valutaLaneOffset_process.pid))
+            time.sleep(seconds_between_processes)'''
             sim_completed = False
             
             try: #<SimCtrl><DelayedStop value="true"/></SimCtrl>
@@ -192,6 +200,15 @@ def scriptVTD (i):
                     print(f"Processo con PID {rdbSniffer_process.pid} non trovato.")
                 except Exception as e:
                     print(f"Errore durante la terminazione del processo: {str(e)}")
+                '''logger.info('Killing ValutaLaneOffset...')
+                try:
+                    # Termina il processo utilizzando il suo PID
+                    os.kill(valutaLaneOffset_process.pid, 9)  # Il segnale 9 è il segnale KILL, che forza la terminazione del processo
+                    print(f"Processo con PID {valutaLaneOffset_process.pid} terminato con successo.")
+                except ProcessLookupError:
+                    print(f"Processo con PID {valutaLaneOffset_process.pid} non trovato.")
+                except Exception as e:
+                    print(f"Errore durante la terminazione del processo: {str(e)}")'''
 
                 duration = datetime.datetime.now() - sim_start_time
                 logger.info('Simulation ' +  sim_name + ' duration (esterna) -> ' + str(duration.total_seconds()) + 's')
@@ -244,7 +261,7 @@ def scriptVTD (i):
                     f.write('{key}={value}\n'.format(key=key, value=value))
                 f.write('Sim duration={duration}\n'.format(duration=duration))
 
-            logger.info('Sim' + str(i) + 'done\n\n')
+            logger.info('Sim ' + str(i) + ' done\n\n')
             logger.info('Copying all the taskrec logs')
             for filename in glob.glob(os.path.join('/tmp', 'taskRec_*.txt')):
                 #logger.info('Copying: '+filename+' into '+ sim_output_debug_folder) #copia i file di log nella cartella output
