@@ -15,6 +15,7 @@ import SelectFromCSV
 
 if __name__ == '__main__': #tipico codice all`inizio dello script, infatti ci permette di dire che il file verra eseguito solo se il modulo viene eseguito direttamente come script e non quando viene importato da un altro script. __name__ variabile predefinita che contiene il nome del modulo
     #"os" libreria che permette di interagire con il sistema operativo
+    startProgram = datetime.datetime.now() #prendo il tempo di inizio simulazione 
     i=0 #definisco contatore
     print('STANDARD SIMULATION\n')
     listaValori = []
@@ -27,11 +28,12 @@ if __name__ == '__main__': #tipico codice all`inizio dello script, infatti ci pe
     timeSim, MediaLaneOffset = coppiaValori
     defaultDriver.setTimePath(timeSim)
     defaultDriver.setLaneOffset(MediaLaneOffset)
+    print(timeSim, MediaLaneOffset)
     x = defaultDriver
     #print("Lista geni driver " + str(i) + ":", defaultDriver.listaGeni, "\n", "Lane Offset driver " + str(i) + ":", defaultDriver.LaneOffset,"\n", "TimeSim driver " + str(i) + ":", defaultDriver.timePath)
     i = i + 1
 
-    while (i<3):
+    while (i<3): #cosa metto in questo while
         print('\nSIMULATION NUMBER ' + str(i))
         print('\n')
         driverParent = x
@@ -45,18 +47,30 @@ if __name__ == '__main__': #tipico codice all`inizio dello script, infatti ci pe
         print("Starting VTD Script")
         coppiaValori = startVTDSimulation_SimoneDario.scriptVTD(i) #dovrei passargli come parametro la configurazione del driver
         timeSim, MediaLaneOffset = coppiaValori
-        
+        print("Tempo Simulazione: " + timeSim,"Media Lane Offset: " + MediaLaneOffset)
+
         driverOffspring.setTimePath(timeSim) #setto le variabili d'istanza del driver
         driverOffspring.setLaneOffset(MediaLaneOffset) #setto le variabili d'istanza del driver
         ffOffspring = algorimoGenetico.FitnessFunction(timeSim, MediaLaneOffset)
-        print(ffParent, ffOffspring)
+        print("FF Parent: " + str(ffParent), "FF Offspring: " + str(ffOffspring))
         if algorimoGenetico.sopravvivenzaDriver(ffParent, ffOffspring) == 1:
-                x = driverParent #tengo il parent
+                x = driverParent
+                 #tengo il parent
+                print("SOPRAVVIVE PARENT")
+                print("Lista geni Parent" + str(x.listaGeni))
         else:
-                x = driverOffspring #tengo l'offspring 
+                x = driverOffspring
+                #x = driverOffspring #tengo l'offspring 
+                print("SOPRAVVIVE OFFSPRING")
+                print("Lista geni Offspring" + str(x.listaGeni))
 
-        print("Lista geni driver " + str(i) + ":", x.listaGeni, "\n", "Lane Offset driver " + str(i) + ":", x.LaneOffset,"\n", "TimeSim driver " + str(i) + ":", x.timePath)
+        ##print("Lista geni driver " + str(i) + ":", x.listaGeni, "\n", "Lane Offset driver " + str(i) + ":", x.LaneOffset,"\n", "TimeSim driver " + str(i) + ":", x.timePath)
         i = i + 1
 
-print("Hai trovato il tuo driver finale!")
+print("Hai trovato il tuo driver finale: ")
+print(x.listaGeni)
+print(x.timePath, x.LaneOffset)
+duration = datetime.datetime.now() - startProgram
+print('\n\nTempo totale programma -> ' + str(round(duration.total_seconds()/60),3) + 'min')
 print("\nMAIN TERMINATO")
+
