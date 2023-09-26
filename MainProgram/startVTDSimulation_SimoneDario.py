@@ -29,7 +29,7 @@ def scriptVTD (i):
         print('Missing configuration file.\n{error}'.format(error=str(e)))
         sys.exit(-1)  
 
-    print(driver_configuration)
+    #print(driver_configuration)
     ## CREO LE CARTELLE DI OUTPUT CON LA FUNZIONE MAKE OUTPUT FOLDERS
     #crea una cartella per gli output ricevendo in input configuration che e la var. definita sopra
 
@@ -218,8 +218,8 @@ def scriptVTD (i):
             # Prelevo timeSim e LaneOffsetMedio dal file csv
             csv_file = os.path.join("/home/udineoffice/Desktop/SimulationLauncher/outputs", sim_output_folder, ".debug/Dati_rdbSniffer.csv")
 
-            TimeSimulation = SelectFromCSV.TimeSimFromCSV(csv_file) #devo passargli il percorso cosi riesce a pescare il csv
-            MediaLaneOffset = SelectFromCSV.MediaLaneOffsetFromCSV(csv_file)
+            TimeSimulation = round(SelectFromCSV.TimeSimFromCSV(csv_file),5) #devo passargli il percorso cosi riesce a pescare il csv
+            MediaLaneOffset = round(SelectFromCSV.MediaLaneOffsetFromCSV(csv_file),5) #approssimo a 3 cifre decimali
             logger.info('\nTotal time of Simulation ' +  sim_name + ' -> ' + str(TimeSimulation) + 's')
             logger.info('MediaValue of LaneOffset of Simulation' +  sim_name + ' -> ' + str(MediaLaneOffset))
 

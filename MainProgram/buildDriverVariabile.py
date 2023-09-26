@@ -16,7 +16,7 @@ from src.adams import shrink_results
 from src.adams import TooManyResultsError, generate_post_processing_files
 
 
-def buildDriver(listaValori):
+def buildDriverJSON(listaValori):
     default_directory = '/home/udineoffice/Desktop/SimulationLauncher'
     if os.getcwd() != default_directory:
         os.chdir(default_directory)

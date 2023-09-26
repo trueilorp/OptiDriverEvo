@@ -3,6 +3,9 @@ import openpyxl
 import time
 from ClasseDriver import driver2
 
+#valuta i LaneOffset ogni timestamp
+#Non lo uso alla fine
+
 # Imposta il percorso del tuo file Excel
 file_path = 'Dati_rdbSniffer.csv'
 
