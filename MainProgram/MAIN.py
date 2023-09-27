@@ -17,7 +17,7 @@ import SelectFromCSV
 if __name__ == '__main__': #tipico codice all`inizio dello script, infatti ci permette di dire che il file verra eseguito solo se il modulo viene eseguito direttamente come script e non quando viene importato da un altro script. __name__ variabile predefinita che contiene il nome del modulo
     #"os" libreria che permette di interagire con il sistema operativo
     startProgram = datetime.datetime.now() #prendo il tempo di inizio simulazione 
-    i=0 #definisco contatore
+    i=1 #definisco contatore
     print('\nSTANDARD SIMULATION\n')
     listaValori = []
     algoritmoGenetico.generaValoriDefaultDriver(listaValori)
@@ -29,13 +29,14 @@ if __name__ == '__main__': #tipico codice all`inizio dello script, infatti ci pe
     driverParent.setTimePath(timeSim)
     driverParent.setLaneOffset(MediaLaneOffset)
     print(timeSim, MediaLaneOffset)
+    ffParent = algoritmoGenetico.FitnessFunction(driverParent.timePath, driverParent.LaneOffset, i)
     #print("Lista geni driver " + str(i) + ":", defaultDriver.listaGeni, "\n", "Lane Offset driver " + str(i) + ":", defaultDriver.LaneOffset,"\n", "TimeSim driver " + str(i) + ":", defaultDriver.timePath)
     i = i + 1
 
-    while (i<5): #cosa metto in questo while
+    while (i<=20): #cosa metto in questo while
         print('\nSIMULATION NUMBER ' + str(i))
         print('\n')
-        ffParent = algoritmoGenetico.FitnessFunction(driverParent.timePath, driverParent.LaneOffset, i+1)
+        
         #print(driverParent.listaGeni) #da qui in poi c'e' l'errore
         listaValoriOffspring = copy.deepcopy(listaValori)
         algoritmoGenetico.mutaGene(listaValoriOffspring) #qui ci sara il controllo per capire se i dati che ho prelevato posso andare bene 
@@ -77,8 +78,8 @@ print("Hai trovato il tuo driver finale: ")
 #print(x.timePath, x.LaneOffset)
 
 print("\nPlotting Graphs...")
-TimeSimNormalizzato.doGrafico(i)
-LaneOffsetNormalizzato.doGrafico(i)
+TimeSimNormalizzato.doGrafico()
+LaneOffsetNormalizzato.doGrafico()
 
 duration = datetime.datetime.now() - startProgram
 print('\n\nTempo totale programma -> ' + "{:.2f}".format(duration.total_seconds()/60) + 'min')
