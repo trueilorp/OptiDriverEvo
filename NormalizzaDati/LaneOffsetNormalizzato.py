@@ -12,19 +12,19 @@ load_dotenv()
 
 valoriYGrafico = []
 valoriRun = []
-valoriTimeSim = []
+valoriLaneOffset = []
 
 def gaussiana(x, media, deviazione_std):
     return (1 / (deviazione_std * np.sqrt(2 * np.pi))) * np.exp(-(x - media)**2 / (2 * deviazione_std**2))
 
-def doGrafico(i):
+def doGrafico():
     
     cartella_radice = '/home/udineoffice/Desktop'
     nome_sottocartella = 'Graphs'
     cartella = os.path.join(cartella_radice, nome_sottocartella)
 
     if not os.path.exists(cartella):
-            os.makedirs(cartella)
+            os.makedirs(cartella)    
 
     # Visualizza la funzione gaussiana
     plt.plot(valoriRun, valoriYGrafico)
@@ -33,7 +33,7 @@ def doGrafico(i):
     plt.ylabel('ff2')
     plt.grid(True)
 
-    nome_grafico = f'grafico_LaneOffset_{i + 1}.png'
+    nome_grafico = f'grafico_LaneOffset.png'
     percorso_grafico = os.path.join(cartella, nome_grafico)
     plt.savefig(percorso_grafico)
 
@@ -41,7 +41,6 @@ def doGrafico(i):
 
 
 def normalizzaLO(valore, i):
-    i = i + 1
     
     try:
     # Prova ad aprire il file Excel
@@ -67,7 +66,7 @@ def normalizzaLO(valore, i):
     sheet['D1'] = 'Deviazione Standard'
     sheet['E1'] = 'Distribuzione Gaussiana'
     sheet['F1'] = '1 - ff1'
-    
+
     nuovo_file.save('/home/udineoffice/Desktop/Graphs.xlsx')
 
     colonne_fisse = ['laneOffset (cm)'] 
@@ -76,33 +75,33 @@ def normalizzaLO(valore, i):
     df = pd.read_excel('/home/udineoffice/Desktop/Graphs.xlsx')
     # Assumi che i dati siano nella colonna "Dati"
 
-    sheet['B' + str(i)] = valore
-    x = sheet.cell(row=i, column=2).value
-    valoriTimeSim.append(x) #metto i valori del time sim in una lista 
+    sheet['B' + str(i+1)] = valore
+    x = sheet.cell(row=i+1, column=2).value
+    valoriLaneOffset.append(x) #metto i valori del time sim in una lista 
     
-    datiPerDSTD = np.array(valoriTimeSim)
+    datiPerDSTD = np.array(valoriLaneOffset)
 
     #Scrivo il numero dalla run
-    sheet['A' + str(i)] = i - 1
-    valoriRun.append(sheet.cell(row=i, column=1).value)
+    sheet['A' + str(i+1)] = i
+    valoriRun.append(sheet.cell(row=i+1, column=1).value)
 
     #Calcola la media parziale
-    media = round(np.mean(valoriTimeSim),2)
-    sheet['C' + str(i)] = media
+    media = round(np.mean(valoriLaneOffset),2)
+    sheet['C' + str(i+1)] = media
 
     #Calcola la deviazione standard
     deviazione_std = round(np.std(datiPerDSTD),2)
     #deviazione_std = round(np.std(valoriTimeSim),2)
-    sheet['D' + str(i)] = deviazione_std
+    sheet['D' + str(i+1)] = deviazione_std
 
     #Calcola la funzione gaussiana
     y = gaussiana(x, media, deviazione_std)
-    sheet['E' + str(i)] = y
+    sheet['E' + str(i+1)] = y
 
     #Calcola 1 - funzione gaussiana
     w = 1 - y
-    sheet['F' + str(i)] = w
-    valoriYGrafico.append(sheet.cell(row=i, column=6).value)
+    sheet['F' + str(i+1)] = w
+    valoriYGrafico.append(sheet.cell(row=i+1, column=6).value)
 
     print("MEDIA " + str(media))
     print("DEVIAZIONE STD " + str(deviazione_std))

@@ -18,7 +18,7 @@ valoriTimeSim = []
 def gaussiana(x, media, deviazione_std):
     return (1 / (deviazione_std * np.sqrt(2 * np.pi))) * np.exp(-(x - media)**2 / (2 * deviazione_std**2))
 
-def doGrafico(i):
+def doGrafico():
     
     cartella_radice = '/home/udineoffice/Desktop'
     nome_sottocartella = 'Graphs'
@@ -34,7 +34,7 @@ def doGrafico(i):
     plt.ylabel('ff2')
     plt.grid(True)
 
-    nome_grafico = f'grafico_TimeSim_{i + 1}.png'
+    nome_grafico = f'grafico_TimeSim.png'
     percorso_grafico = os.path.join(cartella, nome_grafico)
     plt.savefig(percorso_grafico)
 
@@ -42,8 +42,6 @@ def doGrafico(i):
 
 
 def normalizzaTS(valore, i):
-
-    i = i + 1
 
     try:
     # Prova ad aprire il file Excel
@@ -75,33 +73,33 @@ def normalizzaTS(valore, i):
     # Assumi che i dati siano nella colonna "Dati"
 
 
-    sheet['B' + str(i)] = valore
-    x = sheet.cell(row=i, column=2).value
+    sheet['B' + str(i+1)] = valore
+    x = sheet.cell(row=i+1, column=2).value
     valoriTimeSim.append(x) #metto i valori del time sim in una lista 
     
     datiPerDSTD = np.array(valoriTimeSim)
 
     #Scrivo il numero dalla run
-    sheet['A' + str(i)] = i-1
-    valoriRun.append(sheet.cell(row=i, column=1).value)
+    sheet['A' + str(i+1)] = i
+    valoriRun.append(sheet.cell(row=i+1, column=1).value)
 
     #Calcola la media parziale
     media = round(np.mean(valoriTimeSim),2)
-    sheet['C' + str(i)] = media
+    sheet['C' + str(i+1)] = media
 
     #Calcola la deviazione standard
     deviazione_std = round(np.std(datiPerDSTD),2)
     #deviazione_std = round(np.std(valoriTimeSim),2)
-    sheet['D' + str(i)] = deviazione_std
+    sheet['D' + str(i+1)] = deviazione_std
 
     #Calcola la funzione gaussiana
     y = gaussiana(x, media, deviazione_std)
-    sheet['E' + str(i)] = y
+    sheet['E' + str(i+1)] = y
 
     #Calcola 1 - funzione gaussiana
     w = 1 - y
-    sheet['F' + str(i)] = w
-    valoriYGrafico.append(sheet.cell(row=i, column=6).value)
+    sheet['F' + str(i+1)] = w
+    valoriYGrafico.append(sheet.cell(row=i+1, column=6).value)
 
     print("MEDIA " + str(media))
     print("DEVIAZIONE STD " + str(deviazione_std))
