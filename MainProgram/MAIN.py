@@ -1,6 +1,6 @@
 import startVTDSimulation_SimoneDario
 import copy 
-import algorimoGenetico
+import algoritmoGenetico
 import buildDriverVariabile
 from NormalizzaDati import TimeSimNormalizzato, LaneOffsetNormalizzato
 from ClasseDriver import driver
@@ -20,13 +20,12 @@ if __name__ == '__main__': #tipico codice all`inizio dello script, infatti ci pe
     i=0 #definisco contatore
     print('\nSTANDARD SIMULATION\n')
     listaValori = []
-    algorimoGenetico.generaValoriDefaultDriver(listaValori)
+    algoritmoGenetico.generaValoriDefaultDriver(listaValori)
     print("Generating Value list for Default Driver -> " + str(listaValori))
     print("Build DefaultDriver and Apply to file json...")
     driverParent = driver2.Driver(listaValori) #costruisco il mio driver 
     buildDriverVariabile.buildDriverJSON(listaValori) #applico la configurazione al json 
-    coppiaValori = startVTDSimulation_SimoneDario.scriptVTD(i) #dovrei passargli come parametro la configurazione del driver
-    timeSim, MediaLaneOffset = coppiaValori
+    timeSim, MediaLaneOffset  = startVTDSimulation_SimoneDario.scriptVTD(i) #dovrei passargli come parametro la configurazione del driver
     driverParent.setTimePath(timeSim)
     driverParent.setLaneOffset(MediaLaneOffset)
     print(timeSim, MediaLaneOffset)
@@ -36,10 +35,10 @@ if __name__ == '__main__': #tipico codice all`inizio dello script, infatti ci pe
     while (i<5): #cosa metto in questo while
         print('\nSIMULATION NUMBER ' + str(i))
         print('\n')
-        ffParent = algorimoGenetico.FitnessFunction(driverParent.timePath, driverParent.LaneOffset, i+1)
+        ffParent = algoritmoGenetico.FitnessFunction(driverParent.timePath, driverParent.LaneOffset, i+1)
         #print(driverParent.listaGeni) #da qui in poi c'e' l'errore
         listaValoriOffspring = copy.deepcopy(listaValori)
-        algorimoGenetico.mutaGene(listaValoriOffspring) #qui ci sara il controllo per capire se i dati che ho prelevato posso andare bene 
+        algoritmoGenetico.mutaGene(listaValoriOffspring) #qui ci sara il controllo per capire se i dati che ho prelevato posso andare bene 
         print("Generating Value list -> " + str(listaValoriOffspring))
         print("Build Driver and Apply to file json...")
         #driverOffspring = copy.deepcopy(driverParent)
@@ -49,15 +48,15 @@ if __name__ == '__main__': #tipico codice all`inizio dello script, infatti ci pe
         #print(driverParent.listaGeni)
 
         print("Starting VTD Script")
-        coppiaValori = startVTDSimulation_SimoneDario.scriptVTD(i) #dovrei passargli come parametro la configurazione del driver
-        timeSim, MediaLaneOffset = coppiaValori
+        timeSim, MediaLaneOffset = startVTDSimulation_SimoneDario.scriptVTD(i) #dovrei passargli come parametro la configurazione del driver
+
         print("Tempo Simulazione: " + str(timeSim),"Media Lane Offset: " + str(MediaLaneOffset))
 
         driverOffspring.setTimePath(timeSim) #setto le variabili d'istanza del driver
         driverOffspring.setLaneOffset(MediaLaneOffset) #setto le variabili d'istanza del driver
-        ffOffspring = algorimoGenetico.FitnessFunction(timeSim, MediaLaneOffset, i)
+        ffOffspring = algoritmoGenetico.FitnessFunction(timeSim, MediaLaneOffset, i)
         print("FF Parent: " + str(ffParent), "FF Offspring: " + str(ffOffspring))
-        if algorimoGenetico.sopravvivenzaDriver(ffParent, ffOffspring) == 1:
+        if algoritmoGenetico.sopravvivenzaDriver(ffParent, ffOffspring) == 1:
                 
                 print("SOPRAVVIVE PARENT")
                 print("Lista geni Parent" + str(driverParent.listaGeni))
