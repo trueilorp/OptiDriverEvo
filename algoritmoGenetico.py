@@ -2,9 +2,10 @@ import random
 
 def mutate_individual(driver):
     lista_geni =  driver.parameters
-    #intervalli = [(0, 3), (6, 8), (13, 13)]
-    #intervallo_scelto = random.choice(intervalli)
-    indice_gene_da_modificare = random.randint(0,3) #scegli indice gene da mutare
+    intervalli = [(0, 0), (1, 1), (2, 2), (3, 3), (6, 6), (7, 7), (8, 8), (13, 13)]
+    intervallo_scelto = random.choice(intervalli)
+    inizio, fine = intervallo_scelto
+    indice_gene_da_modificare = random.randint(inizio,fine) #scegli indice gene da mutare
     if 17 <= indice_gene_da_modificare <= 21:
         if lista_geni[indice_gene_da_modificare] == "1":
             lista_geni[indice_gene_da_modificare] = "0"

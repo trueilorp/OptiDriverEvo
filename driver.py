@@ -2,10 +2,14 @@ from dotenv import load_dotenv  #libreria che semplifica l'uso di variabili d'am
 load_dotenv()
 import json
 
-class Driver:
-     
+class Driver:   
+
+    COUNT = 0
+
     def __init__(self, lista_parametri):
        self.parameters = lista_parametri
+       Driver.COUNT += 1
+       self.id_driver = Driver.COUNT
 
     def default_driver_generate_value(self):
         with open('sim_config.json', 'r') as file:

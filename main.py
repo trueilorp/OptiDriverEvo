@@ -1,4 +1,4 @@
-import random, simulate, json, selNSGA2, algoritmoGenetico, crossover
+import random, simulate, json, selNSGA2, crossover, logging, dumpPopulation, algoritmoGenetico, numpy as np
 from deap import base, creator, tools 
 from math import sqrt
 from driver import Driver
@@ -7,26 +7,19 @@ from deap import base
 from deap.benchmarks.tools import diversity, convergence, hypervolume
 from deap import creator
 from deap import tools
+logging.getLogger('matplotlib').setLevel(logging.WARNING)
 
-def muta_gene(driver):
-    lista_geni =  driver.Lista_parametri
-    #intervalli = [(0, 3), (6, 8), (13, 13)]
-    #intervallo_scelto = random.choice(intervalli)
-    indice_gene_da_modificare = random.randint(0,3) #scegli indice gene da mutare
-    if 17 <= indice_gene_da_modificare <= 21:
-        if lista_geni[indice_gene_da_modificare] == "1":
-            lista_geni[indice_gene_da_modificare] = "0"
-        else:
-            lista_geni[indice_gene_da_modificare] = "1"
-    else:
-        valore_di_modifica = 0
-        valore_modificato = valore_di_modifica + float(lista_geni[indice_gene_da_modificare])
-        while (valore_di_modifica == 0) or (valore_modificato < 0 or valore_modificato > 1): #per evitare che sia zero o che sfori 
-            valore_di_modifica = round(random.uniform(-0.5, 0.5),2) #scelgo un valore di modifica che sta tra -0,1 e 0,1
-            valore_modificato = valore_di_modifica + float(lista_geni[indice_gene_da_modificare])
-        
-        lista_geni[indice_gene_da_modificare] = "{:.2f}".format(valore_modificato) #modifico il parametro
-    return lista_geni
+# how to plot Pareto Front:
+# https://notebook.community/locie/locie_notebook/ml/multiobjective_optimization
+
+stats = tools.Statistics(lambda ind: ind.fitness.values)
+stats.register("avg", np.mean, axis=0)
+stats.register("std", np.std, axis=0)
+
+def get_costants_of_ga():
+    with open('/home/udineoffice/Desktop/SimulationLauncher_PopulationBased/config.json', 'r') as file:
+        config = json.load(file)
+    return config["numberOfGenerations"], config["numberOfIndividuals"], config["numberOfGens"], config["boundLow"],config["boundUp"], config["probabilityOfCrossover"] 
 
 def default_driver_generate_value():
         with open('sim_config.json', 'r') as file:
@@ -41,7 +34,7 @@ def default_driver_generate_value():
 
 def get_gens_of_driver():
     params_list = default_driver_generate_value()
-    modify_value = random.uniform(BOUND_LOW, BOUND_UP/2)   
+    modify_value = random.uniform(0.0, 0.3)   
     for gen in range(len(params_list)-5):  # Utilizziamo un ciclo con gli indici
         operation = random.choice(['+', '-'])
         if operation == '+':            
@@ -51,7 +44,6 @@ def get_gens_of_driver():
     return params_list
 
 def generate_driver():
-    Driver.id_driver =+ 1
     gens_list = get_gens_of_driver()
     driver = creator.Individual(gens_list)
     return driver
@@ -60,13 +52,9 @@ def evaluate(driver, num_runs):
     print('\nSIMULATION NUMBER ' + str(num_runs) + '\n')
     timeSim, mediaLaneOffset = simulate.simulate(driver, num_runs)
     driver.fitness.values = (timeSim, mediaLaneOffset) 
-    print("\n############FITNESS.VALUE###############\n" + str(driver.fitness.values) + "\n###########")
+    print("\n############FITNESS VALUE###############\n" + str(driver.fitness.values) + "\n###############################")
 
-BOUND_LOW, BOUND_UP = 0.0, 1.0
-NDIM = 22 # geni driver
-NGEN = 5 # iterazioni 
-MU = 4  # numero individui della popolazione
-CXPB = 0.9
+NGEN, MU, NDIM, BOUND_LOW, BOUND_UP, CXPB = get_costants_of_ga() # numero generazioni, numero individui della popolazione 
 
 # Definizione del problema e dei tipi di fitness (essendo multi-objective ora devo minimizzare le due fitness)
 creator.create("FitnessMulti", base.Fitness, weights=(-1.0, -1.0))  # Due funzioni di fitness
@@ -76,30 +64,41 @@ toolbox = base.Toolbox()
 toolbox.register("individual", generate_driver)
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 toolbox.register("evaluate", evaluate)
-toolbox.register("mutate", algoritmoGenetico.muta_gene)
+toolbox.register("mutate", algoritmoGenetico.mutate_individual)
 toolbox.register("mate", crossover.crossover_gens, low=BOUND_LOW, up=BOUND_UP, eta=20.0) 
 # Operatori genetici
 #toolbox.register("evaluate", evaluate)
 
 
-def main_population_based(seed=None):
+def get_best_population(seed=None):
 
     random.seed(seed)
-
+    best_population = []
     # Creazione di una popolazione iniziale
     population = toolbox.population(MU)  # Creiamo una popolazione di 100 individui
+    best_population.append(population)
 
+    invalid_ind = [ind for ind in population if not ind.fitness.valid]
     # Valutazione della popolazione iniziale (usa le tue due funzioni di fitness)
     for indice, individuo in enumerate(population):
-        evaluate(individuo, indice) # Sostituisci con i tuoi valori effettivi per le due funzioni di fitness
+        evaluate(individuo, indice+1) # Sostituisci con i tuoi valori effettivi per le due funzioni di fitness
 
     population = selNSGA2.selNSGA2(population, len(population))
-    num_runs = 4
-    num_generations = 1
 
+    num_runs = MU + 1
+    num_generations = 1
     while num_generations <= NGEN:
-        offspring = tools.selTournamentDCD(population, len(population)) #vuole due parametri: la popolazione e quanti individui tenere 
+        # Vary the population
+        # La + basata su torneo coinvolge la scelta casuale di un certo numero di individui (generalmente due) 
+        # dalla popolazione corrente. Gli individui selezionati partecipano a un "torneo", e quello con la fitness migliore 
+        # viene selezionato come genitore per la generazione successiva. Questo processo viene ripetuto per creare tutti 
+        # gli individui della generazione successiva.
+        offspring = selNSGA2.selTournamentDCD(population, len(population)) #seleziona t offspring in numero sempre minore alla popsize
         offspring = [toolbox.clone(ind) for ind in offspring] #deep copy
+
+        #Nuovi ID per i driver 
+        for i,off in enumerate(offspring):
+            off.id_driver = num_generations * MU + i + 1
 
         for ind1, ind2 in zip(offspring[::2], offspring[1::2]): #itera gli offspring in coppia
             if random.random() <= CXPB:
@@ -108,28 +107,36 @@ def main_population_based(seed=None):
             toolbox.mutate(ind1)
             toolbox.mutate(ind2)
             del ind1.fitness.values, ind2.fitness.values
-
+            # Alla fine del processo di crossover e mutazione, le fitness dei nuovi genitori vengono contrassegnate come non 
+            # valide (fitness.values viene eliminato) perché le loro caratteristiche genetiche sono state modificate. 
+            # Questo significa che durante la prossima valutazione della fitness, i nuovi valori di fitness verranno 
+            # calcolati per questi individui.
+           
         # Evaluate the individuals with an invalid fitness
         for ind in offspring:
             if not ind.fitness.valid: #per gli individui la cui fitness e' invalida 
-                evaluate(individuo, num_runs)  #ri valu
+                evaluate(ind, num_runs)  #ri valu
                 num_runs += 1
 
-        print("Population:\n")
+        print("Population:")
         for i, individuo in enumerate(population, 1):  # Partiamo dall'indice 1
-            print(f"Individuo {i}: {individuo.parameters}")
+            print(f"Individuo {i}: {individuo.fitness.values}")
         # Select the next generation population
         new_population = population + offspring
-        print("\nNew population:\n")
+        print("\nNew population:")
         for i, individuo in enumerate(new_population, 1):  # Partiamo dall'indice 1
-            print(f"Individuo {i}: {individuo.parameters}")
+            print(f"Individuo {i}: {individuo.fitness.values}")
 
         population = selNSGA2.selNSGA2(new_population, MU)
 
-        num_generations += 1
-        
-    print("Final drivers is " + str(population))
-    return population
+        best_population.append(population) #ogni giro mi da la popolazione migliore 
+        result_data = stats.compile(population)
+        num_generations += 1       
+    #print("Final population is " + str(population))
+    print(result_data)
+    return population, best_population
 
 if __name__ == "__main__":
-    pop = main_population_based()
+    
+    final_population, best_population = get_best_population()
+    dumpPopulation.dump_population(best_population)    
