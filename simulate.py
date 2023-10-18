@@ -31,11 +31,6 @@ def buildJSON_ofDriver(lista_parametri):
         with open('/home/udineoffice/Desktop/SimulationLauncher_PopulationBased/driver_config.json', "w") as config_file:
             json.dump(config_data, config_file, indent=4)
 
-def get_number_of_runs():
-    with open('/home/udineoffice/Desktop/SimulationLauncher_PopulationBased/config.json', 'r') as file:
-        config = json.load(file)
-    return config["numberOfIterations"]
-
 def simulate(driver, num_runs):
     genes_of_driver = driver.parameters
     print(genes_of_driver)
@@ -43,6 +38,7 @@ def simulate(driver, num_runs):
     time_sim, media_lane_offset = startVTDSimulation_SimoneDario.scriptVTD(num_runs) #starta vtd con il driver corrente 
     return (time_sim, media_lane_offset)
 
+'''
 def start_of_program():
 
     time_beginning_of_program = datetime.datetime.now() #prendo il tempo di inizio programma 
@@ -104,11 +100,4 @@ def end_of_program(driver_parent, drivers_runs, best_drivers, time_beginning_of_
     duration = datetime.datetime.now() - time_beginning_of_program
     print('\n\nTempo totale programma -> ' + "{:.2f}".format(duration.total_seconds()/60) + 'min')
     print("\nALL DONE!")
-
-    
-
-
-
-
-
-
+'''

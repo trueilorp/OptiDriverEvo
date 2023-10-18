@@ -1,4 +1,4 @@
-import random, simulate, json, selNSGA2, crossover, logging, dumpPopulation, algoritmoGenetico, numpy as np
+import random, simulate, json, selNSGA2, crossover, logging, dumpPopulation, algoritmoGenetico, numpy as np, matplotlib as plt
 from deap import base, creator, tools 
 from math import sqrt
 from driver import Driver
@@ -13,8 +13,11 @@ logging.getLogger('matplotlib').setLevel(logging.WARNING)
 # https://notebook.community/locie/locie_notebook/ml/multiobjective_optimization
 
 stats = tools.Statistics(lambda ind: ind.fitness.values)
-stats.register("avg", np.mean, axis=0)
-stats.register("std", np.std, axis=0)
+stats.register("avg", np.mean)
+stats.register("std", np.std)
+stats.register("min", np.min)
+stats.register("max", np.max)
+
 
 def get_costants_of_ga():
     with open('/home/udineoffice/Desktop/SimulationLauncher_PopulationBased/config.json', 'r') as file:
@@ -131,6 +134,9 @@ def get_best_population(seed=None):
 
         best_population.append(population) #ogni giro mi da la popolazione migliore 
         result_data = stats.compile(population)
+
+        dumpPopulation.dump_population_inside_while(new_population) 
+
         num_generations += 1       
     #print("Final population is " + str(population))
     print(result_data)
@@ -139,4 +145,15 @@ def get_best_population(seed=None):
 if __name__ == "__main__":
     
     final_population, best_population = get_best_population()
-    dumpPopulation.dump_population(best_population)    
+    dumpPopulation.dump_population_inside_while(final_population) 
+    dumpPopulation.dump_population(best_population) 
+
+    pop, log = algorithms.eaSimple(best_population, toolbox, cxpb=0.5, mutpb=0.2, ngen=10, stats=stats, halloffame=None, verbose=True)
+    gen, avg, min_, max_ = log.select("gen", "avg", "min", "max")
+    plt.plot(gen, avg, label="average")
+    plt.plot(gen, min_, label="minimum")
+    plt.plot(gen, max_, label="maximum")
+    plt.xlabel("Generation")
+    plt.ylabel("Fitness")
+    plt.legend(loc="lower right")
+    plt.show()   
