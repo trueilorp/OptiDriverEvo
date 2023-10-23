@@ -1,11 +1,12 @@
 #22 valori
 import random, copy
 
-def muta_gene(driver):
-    lista_geni =  copy.deepcopy(driver.Lista_parametri)
-    #intervalli = [(0, 3), (6, 8), (13, 13)]
-    #intervallo_scelto = random.choice(intervalli)
-    indice_gene_da_modificare = random.randint(0,3) #scegli indice gene da mutare
+def mutate(driver):
+    lista_geni =  copy.deepcopy(driver.parameters)
+    intervalli = [(0, 0), (1, 1), (2, 2), (3, 3), (6, 6), (7, 7), (8, 8), (13, 13)]
+    intervallo_scelto = random.choice(intervalli)
+    inizio, fine = intervallo_scelto
+    indice_gene_da_modificare = random.randint(inizio, fine) #scegli indice gene da mutare
     if 17 <= indice_gene_da_modificare <= 21:
         if lista_geni[indice_gene_da_modificare] == "1":
             lista_geni[indice_gene_da_modificare] = "0"
@@ -22,11 +23,12 @@ def muta_gene(driver):
     return lista_geni
 
 def get_best_driver(driver_parent, driver_offspr):  #copio oggetti 
-    if driver_parent.Fitness_function_totale < driver_offspr.Fitness_function_totale:
+    if driver_parent.total_fitness_function < driver_offspr.total_fitness_function:
         print("\nSOPRAVVIVE OFFSPRING")
-        print("Lista parametri nuovo Parent" + str(driver_offspr.Lista_parametri))
-        return copy.deepcopy(driver_offspr)
+        print("Lista parametri nuovo Parent" + str(driver_offspr.parameters))
+        #return copy.deepcopy(driver_offspr)
+        return driver_offspr
     else:
         print("\nSOPRAVVIVE PARENT")
-        print("Lista parametri Parent" + str(driver_parent.Lista_parametri))
+        print("Lista parametri Parent" + str(driver_parent.parameters))
         return driver_parent

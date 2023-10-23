@@ -47,9 +47,9 @@ def get_grafico(run_values, y_values, tipo_grafico, dir_path):
 
     plt.close()
 
-def save_csv():
+def get_path_csv():
     # Specifica il percorso della directory principale
-    directory_path = '/home/udineoffice/Desktop/SimulationLauncherNew/outputs'
+    directory_path = '/home/udineoffice/Desktop/OptiDriverEvo_OnePlusOne/outputs'
 
     # Ottieni una lista di tutte le cartelle nella directory principale
     folders = [folder for folder in os.listdir(directory_path) if os.path.isdir(os.path.join(directory_path, folder))]
@@ -62,12 +62,9 @@ def save_csv():
         most_recent_folder = folders[0]
         
         # Costruisci il percorso completo del file da memorizzare
-        file_to_store = os.path.join(directory_path, most_recent_folder, 'Result_of_simulation.xlsx')
+        file_to_store = os.path.join(directory_path, most_recent_folder, 'Results_of_simulations.xlsx')
         dir_path = os.path.join(directory_path, most_recent_folder)
         print(file_to_store)
-
-    workbook = Workbook()
-    workbook.save(file_to_store)
 
     return file_to_store, dir_path
 
@@ -78,12 +75,29 @@ def dump_drivers(drivers, best_drivers):
     valori_lane_offset = []
     valori_fitness_function = []
 
-    path_file_to_store, dir_path = save_csv()
-    nuovo_file = load_workbook(path_file_to_store)
-    sheet = nuovo_file.active
-    sheet.title = "Results of simulation"
-    print("File Excel esistente aperto in modalità di sola lettura.")
-    
+    path_file_to_store, dir_path = get_path_csv()
+
+    if os.path.exists(path_file_to_store):
+        # Il file esiste, aprilo
+        nuovo_file = load_workbook(path_file_to_store)
+    else:
+        # Il file non esiste, crea un nuovo file
+        nuovo_file = Workbook()
+        nuovo_file.save(path_file_to_store)
+
+    if "Results of simulation 2" in nuovo_file.sheetnames:
+        # Il foglio esiste già, crea un nuovo nome
+        cont_of_sheet = 2
+        while f"Results of simulation {cont_of_sheet}" in nuovo_file.sheetnames:
+            cont_of_sheet += 1
+        new_sheet_name = f"Results of simulation {cont_of_sheet}"
+    else:
+        # Il foglio non esiste, usa il titolo originale
+        new_sheet_name = "Results of simulation 2"
+
+    sheet = nuovo_file.create_sheet(title=new_sheet_name)
+    print(sheet)
+
     build_header_file_csv(sheet)
     nuovo_file.save(path_file_to_store)
     num_of_run = 1
@@ -91,11 +105,11 @@ def dump_drivers(drivers, best_drivers):
     for driver, best_driver in zip(drivers, best_drivers):
         
         valori_run.append(num_of_run)
-        time_sim = driver.TimeSim
+        time_sim = driver.time_sim
         valori_time_sim.append(time_sim)
-        lane_offset = driver.LaneOffset
+        lane_offset = driver.lane_offset
         valori_lane_offset.append(lane_offset)
-        fitness_function = driver.Fitness_function_totale
+        fitness_function = driver.total_fitness_function
         valori_fitness_function.append(fitness_function)
 
         #Scrivo i valori del mio driver
@@ -107,9 +121,9 @@ def dump_drivers(drivers, best_drivers):
 
         colonna_parametri = 6
         #Scrivo i parametri del mio driver
-        for params in driver.Lista_parametri:
+        for params in driver.parameters:
             cella = sheet.cell(row=num_of_run+1, column=colonna_parametri)  
-            cella.value = params
+            cella.value = float(params)
             colonna_parametri += 1  # Passa alla colonna successiva per il prossimo parametro
 
         num_of_run += 1
@@ -117,6 +131,6 @@ def dump_drivers(drivers, best_drivers):
     
     nuovo_file.close()
    
-    get_grafico(valori_run, valori_time_sim, "time simulation", dir_path)
-    get_grafico(valori_run, valori_lane_offset, "lane offset", dir_path)
-    get_grafico(valori_run, valori_fitness_function, "fitness function totale", dir_path)
+    #get_grafico(valori_run, valori_time_sim, "time simulation", dir_path)
+    #get_grafico(valori_run, valori_lane_offset, "lane offset", dir_path)
+    #get_grafico(valori_run, valori_fitness_function, "fitness function totale", dir_path)

@@ -2,7 +2,7 @@ import csv
 import numpy as np
 # Specifica il percorso completo del file CSV
 
-WIDTH_ROAD = 3.500 #ho verificato dallo scenario editor 
+WIDTH_ROAD = 3.650 #ho verificato dallo scenario editor 
 WIDTH_LANE = WIDTH_ROAD/2
 
 def check_out_of_lane(max_lane_offset):
@@ -83,11 +83,16 @@ def get_max_lane_offset_from_csv(csv_file):
 
 # Ora hai la lista laneOffset_column_float contenente i valori validi convertiti in float
 
-    laneOffset_column_float_absolute = [abs(valore) for valore in lane_offset_column_float]
-    valore_max_lane_offset = max(laneOffset_column_float_absolute)
-    if check_out_of_lane(valore_max_lane_offset): #e' in corsia 
-        return valore_max_lane_offset * 100 #trasfomo in cm 
-    else:
-        return -1
+    lane_offset_column_float_absolute = [abs(valore) for valore in lane_offset_column_float]
+    valore_max_lane_offset = max(lane_offset_column_float_absolute)
+
+    #controllo per valori sballati causa RDB 
+    if (valore_max_lane_offset*100) >= 100:
+        lane_offset_column_float_absolute = sorted(lane_offset_column_float_absolute)
+        valore_max_lane_offset = lane_offset_column_float_absolute[-2]
+    #if check_out_of_lane(valore_max_lane_offset): #e' in corsia 
+    return valore_max_lane_offset * 100 #trasfomo in cm 
+    #else:
+    #    return -1
     
 
