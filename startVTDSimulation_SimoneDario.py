@@ -2,7 +2,7 @@ import subprocess, logging, os, time, datetime, shutil, random, string, sys, glo
 from os.path import dirname
 from dotenv import load_dotenv  #libreria che semplifica l'uso di variabili d'ambiente, carica da pyenv le variabili
 load_dotenv()
-import SelectFromCSV
+import selectFromCSV
 
 from src.utils import DRIVER_PARAMS_LABEL_TO_NAME, read_configurations, configure_loggers, make_output_folders, copy_files
 ##from src.utils import FMU_DEFAULT_PATH, generate_fmu_mapping_car, fmu_mapping_car_path
@@ -56,19 +56,12 @@ def scriptVTD (i):
     with open(os.path.join(log_folder, 'vtdStartViaSCP_start.log'), 'w+') as vtd_out,\
         open(os.path.join(log_folder, 'scp.log'), 'w+') as scp_out,\
         open(os.path.join(log_folder, 'scp_monitor.log'), 'w+') as scp_monitor_out,\
-        open(os.path.join(log_folder, 'rdbSniffer.log'), 'w+') as rdb_out,\
-        open(os.path.join(log_folder, 'valutaLaneOffset.log'), 'w+') as vlo_out: 
+        open(os.path.join(log_folder, 'rdbSniffer.log'), 'w+') as rdb_out:
 
         for sim_name, sim_params in sim_configuration.items(): #nome della simulazione e i suoi parametri
 
             scenario_file, driver_config_name = sim_params['scenarioFile'], sim_params['driverConfigName'] if 'driverConfigName' in sim_params.keys() else None #assegno alle 2 variabili i vari parametri di scenarioFile e driverConfigName che sono presenti in sim_config.json. Se la chiave esiste si assegna il valore, altrimenti no
             
-            ##fmu_path = sim_params['fmuPath'] if 'fmuPath' in sim_params.keys() else FMU_DEFAULT_PATH 
-
-            ##logger.info('Generating fmu-mapping-car.xml with fmu -> {fmu_path}'.format(fmu_path=fmu_path))
-            ##logger.debug('fmu-mapping-car.xml path -> {fmu_mapping_car_path}'.format(fmu_mapping_car_path=fmu_mapping_car_path))
-            ##generate_fmu_mapping_car(fmu_path)
-
             logger.info('Starting ' + sim_name) #inizio la simulazione
             logger.info('Killing previous instances...') #chiudo se ci sono altre simulazioni in corso, uso vtdStop.sh
             with subprocess.Popen(os.path.join(os.environ['VTD_ROOT'], 'bin', 'vtdStop.sh'), stdout=subprocess.PIPE, shell=True) as p: #reindirizzo lo standard output in una pipe cosi posso catturarlo
@@ -95,8 +88,7 @@ def scriptVTD (i):
                 .no_wait().cmd('Traffic',attributes={},command=SCPCommand().set_parameters([{'driverType': 'DefaultDriver'}]))\
                 .no_wait().sensor('Sensor_MM', 'video', {
                     'Load': {'lib': 'libModulePerfectSensor.so',
-                            'path': '/opt/MSC.Software/VTD.2023.2/Data/Projects/SD_Project/Plugins/ModuleManager'},
-                            #'path': '/home/vtd/VIRES/VTD.2022.3/Data/Projects/../Distros/Current/Plugins/ModuleManager'},
+                            'path': '/opt/MSC.Software/VTD.2023.2/Data/Projects/SD_Project/Plugins/ModuleManager'},                           
                     'Player': {'name': 'Ego'},
                     'Frustum': {'bottom': '6.000000',
                                 'far': '40.00000',
@@ -178,6 +170,11 @@ def scriptVTD (i):
             
             try: #<SimCtrl><DelayedStop value="true"/></SimCtrl>
                 logger.info('Waiting for stop trigger...') #aspetto che si attivi un trigger e mi arrivi un messaggio, cattura il trigger che fa fermare la macchina
+                '''command2 = SCPCommand()\
+                    .wait().cmd(('Set', {'entity': 'player', 'id': '1', 'name': 'Ego'}), 
+                                SCPCommand().self_closed_tag('PosInertial', {}))
+                launch_scp(command2, out_handler=scp_out, error_handler=scp_out, timeout_min=int(configuration['simulationTimeoutMinutes']))
+                '''
                 command = SCPCommand()\
                     .wait().sim_ctrl(SCPCommand().self_closed_tag('DelayedStop', {'value': 'true'}))\
                     .wait(1).cmd_enveloping_self_closed_tags('Symbol', {'name': 'exp101'},{
@@ -185,6 +182,7 @@ def scriptVTD (i):
                         'PosScreen': {'x':"0.01", 'y':"0.05"}
                     })
                 launch_scp(command, out_handler=scp_out, error_handler=scp_out, timeout_min=int(configuration['simulationTimeoutMinutes']))
+                #<Set entity="player" id="1" name="Ego"><PosInertial hDeg="-68.404" pDeg="3.386" rDeg="0.000" x="1508.011" y="-824.308" z="33.811" /></Set>
                 logger.info('Scenario terminated')
                 sim_completed = True #simulazione completata
             except subprocess.TimeoutExpired as e: #dopo 20 minuti killa la simulazione 
@@ -221,21 +219,18 @@ def scriptVTD (i):
             # Prelevo timeSim e LaneOffsetMedio dal file csv
             csv_file = os.path.join("/home/udineoffice/Desktop/SimulationLauncherNew/outputs", sim_output_folder, ".debug/Dati_rdbSniffer.csv")
 
-            TimeSimulation = SelectFromCSV.TimeSimFromCSV(csv_file) #devo passargli il percorso cosi riesce a pescare il csv
-            MediaLaneOffset = SelectFromCSV.MediaLaneOffsetFromCSV(csv_file) 
-            logger.info('\nTime of Simulation ' +  sim_name + ' -> ' + str(TimeSimulation) + 's')
-            logger.info('MediaValue of LaneOffset of Simulation' +  sim_name + ' -> ' + str(MediaLaneOffset))
+            time_simulation = selectFromCSV.get_time_sim_from_csv(csv_file) #devo passargli il percorso cosi riesce a pescare il csv
+            max_lane_offset = selectFromCSV.get_max_lane_offset_from_csv(csv_file) 
+            logger.info('\nTime of Simulation ' +  sim_name + ' -> ' + str(time_simulation) + 's')
+            logger.info('Max value of LaneOffset of Simulation' +  sim_name + ' -> ' + str(max_lane_offset) + 'cm')
 
             #logger.debug('Generating debug files...')
             with open(os.path.join(sim_output_debug_folder, 'driver_ctrl.csv'), 'w+') as dctl_out_csv, open('/tmp/taskRec_ModuleManager.txt', 'r') as mm_file:
-                ##open(os.path.join(sim_output_debug_folder, 'fmu_io.csv'), 'w+') as fmu_out_csv,
                 
                 driver_time = 0.0
-                ##fmu_time = 0.0,
                 
                 mm_fields_params = {
-                    'DRIVER_CTRL,': {'file': dctl_out_csv, 'frame': driver_time}
-                    ##'FMU IN/OUT,': {'file': fmu_out_csv, 'frame': fmu_time}
+                    'DRIVER_CTRL,': {'file': dctl_out_csv, 'frame': driver_time}                    
                 }
 
                 for line in mm_file.readlines():
@@ -267,13 +262,6 @@ def scriptVTD (i):
             #logger.info('Sim ' + str(i) + ' done\n\n')
             #logger.info('Copying all the taskrec logs')
             for filename in glob.glob(os.path.join('/tmp', 'taskRec_*.txt')):
-                #logger.info('Copying: '+filename+' into '+ sim_output_debug_folder) #copia i file di log nella cartella output
                 shutil.copy(filename, sim_output_debug_folder)
 
-        #logger.info('Shrinking result files') perche i dati pesano troppo quindi ne prende un po a campione 
-        #shrink_results(output_folder)
-        #logger.info('Generating plots and pictures')
-        #generate_post_processing_files(output_folder)
-    #logger.info('All done!')
-
-    return (TimeSimulation, MediaLaneOffset)
+    return (time_simulation, max_lane_offset)
