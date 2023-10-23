@@ -22,7 +22,7 @@ logger.propagate = False #per evitare che si duplichino i logger
 
 def scriptVTD (i):
     
-    default_directory = '/home/udineoffice/Desktop/SimulationLauncher_PopulationBased'
+    default_directory = '/home/udineoffice/Desktop/OptiDriverEvo_PopulationBased'
     if os.getcwd() != default_directory:
         os.chdir(default_directory)
     
@@ -32,19 +32,12 @@ def scriptVTD (i):
         print('Missing configuration file.\n{error}'.format(error=str(e)))
         sys.exit(-1)  
 
-    #print(driver_configuration)
-    ## CREO LE CARTELLE DI OUTPUT CON LA FUNZIONE MAKE OUTPUT FOLDERS
-    #crea una cartella per gli output ricevendo in input configuration che e la var. definita sopra
-
     #togliere i file che si creano dopo la simulazione all'interno della cartella tmp, sono i file delle finestre colorate che si aprono
     for filename in glob.glob(os.path.join('/tmp', 'taskRec_*.txt')):
         if os.path.exists(filename): 
             #logger.info('Clean: deleting '+ filename)
             os.remove(filename)            
         
-    #copia i seguenti file nella cartella output_folders, per avere in ogni cartella di output anche la configurazione corrispondente
-    #copy_files(['sim_config.json', 'driver_config.json'], output_folder)
-
     os.chdir(os.environ['VTD_ROOT'])
 
     seconds_between_processes = int(configuration['secondsBetweenProcesses']) #se guardo all'interno di conf.json vedo che i secondi da aspettare sono 5
@@ -60,7 +53,7 @@ def scriptVTD (i):
 
         for sim_name, sim_params in sim_configuration.items(): #nome della simulazione e i suoi parametri
 
-            scenario_file, driver_config_name = sim_params['scenarioFile'], sim_params['driverConfigName'] if 'driverConfigName' in sim_params.keys() else None #assegno alle 2 variabili i vari parametri di scenarioFile e driverConfigName che sono presenti in sim_config.json. Se la chiave esiste si assegna il valore, altrimenti no
+            scenario_file, driver_config_name, simulation_method = sim_params['scenarioFile'], sim_params['driverConfigName'] if 'driverConfigName' in sim_params.keys() else None, sim_params["methodOfSimulation"]
             
             logger.info('Starting ' + sim_name) #inizio la simulazione
             logger.info('Killing previous instances...') #chiudo se ci sono altre simulazioni in corso, uso vtdStop.sh
@@ -143,13 +136,13 @@ def scriptVTD (i):
             
             launch_scp(command, scp_out, scp_out, 0)
 
-            sim_output_folder = os.path.join(output_folder, scenario_file[:-4], driver_config_name, str(i) if 'driverConfigName' in sim_params.keys() else ''.join(random.choice(string.ascii_letters) for _ in range(6)))
+            sim_output_folder = os.path.join(output_folder, scenario_file[:-4] + str(" ~~~ Method: ") + simulation_method, driver_config_name, str(i) if 'driverConfigName' in sim_params.keys() else ''.join(random.choice(string.ascii_letters) for _ in range(6)))
             #logger.info('Creating output folder -> ' + str(sim_output_folder))
             sim_output_debug_folder = os.path.join(sim_output_folder, '.debug')
             os.makedirs(sim_output_debug_folder)
 
-            shutil.copy("/home/udineoffice/Desktop/SimulationLauncher_PopulationBased/sim_config.json", sim_output_debug_folder)
-            shutil.copy("/home/udineoffice/Desktop/SimulationLauncher_PopulationBased/driver_config.json", sim_output_debug_folder)
+            shutil.copy("/home/udineoffice/Desktop/OptiDriverEvo_PopulationBased/sim_config.json", sim_output_debug_folder)
+            shutil.copy("/home/udineoffice/Desktop/OptiDriverEvo_PopulationBased/driver_config.json", sim_output_debug_folder)
 
             rdbSniffer_output_file = os.path.join(sim_output_debug_folder, 'Dati_rdbSniffer.csv')
             #logger.info('Creating RDBSniffer output file -> ' + str(rdbSniffer_output_file))
@@ -161,7 +154,7 @@ def scriptVTD (i):
             #logger.debug('RDB instance -> ' + str(rdbSniffer_process.pid)) #vtd_process l'ho definita sopra, con .pid prendo il PID del processo
             
             #Cercare di valutare ad ogni istante il laneOffset
-            '''valutaLaneOffset_cmd = ["python3", "/home/udineoffice/Desktop/SimulationLauncher_PopulationBased/valutaLaneOffset.py"]
+            '''valutaLaneOffset_cmd = ["python3", "/home/udineoffice/Desktop/OptiDriverEvo_PopulationBased/valutaLaneOffset.py"]
             logger.debug('Launch command valuta Lane Offset -> ' + ' '.join(valutaLaneOffset_cmd))
             valutaLaneOffset_process = subprocess.Popen(valutaLaneOffset_cmd, stdout=vlo_out, stderr=vlo_out) #reindirizzamento standard output e standard error
             logger.debug('Valuta Lane Offset instance -> ' + str(valutaLaneOffset_process.pid))
@@ -181,7 +174,7 @@ def scriptVTD (i):
                 #<Set entity="player" id="1" name="Ego"><PosInertial hDeg="-68.404" pDeg="3.386" rDeg="0.000" x="1508.011" y="-824.308" z="33.811" /></Set>
                 logger.info('Scenario terminated')
                 sim_completed = True #simulazione completata
-            except subprocess.TimeoutExpired as e: #dopo 20 minuti killa la simulazione 
+            except subprocess.TimeoutExpired as e: #dopo 5 minuti killa la simulazione 
                 logger.error('Simulation {sim_name} has timed out!'.format(sim_name=sim_name))
                 logger.debug(str(e)) 
             finally:
@@ -213,7 +206,7 @@ def scriptVTD (i):
             ##os.path.basename(fmu_path)
             
             # Prelevo timeSim e LaneOffsetMedio dal file csv
-            csv_file = os.path.join("/home/udineoffice/Desktop/SimulationLauncher_PopulationBased/outputs", sim_output_folder, ".debug/Dati_rdbSniffer.csv")
+            csv_file = os.path.join("/home/udineoffice/Desktop/OptiDriverEvo_PopulationBased/outputs", sim_output_folder, ".debug/Dati_rdbSniffer.csv")
 
             time_simulation = selectFromCSV.get_time_sim_from_csv(csv_file) #devo passargli il percorso cosi riesce a pescare il csv
             max_lane_offset = selectFromCSV.get_max_lane_offset_from_csv(csv_file) 

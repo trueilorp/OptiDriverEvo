@@ -1,0 +1,14 @@
+{
+    "logFolder": "logs",
+    "outputFolder": "outputs",
+    "rdbOutputFolder": "rdbSnifferOutputs",
+    "secondsBetweenProcesses": "3",
+    "simulationTimeoutMinutes": "5",
+    "numberOfGenerations": 1,
+    "numberOfIndividuals": 4,
+    "numberOfGens" : 22,
+    "boundLow" : 0.0,
+    "boundUp" : 1.0,
+    "probabilityOfCrossover" : 0.9,
+    "probabilityOfMutation" : 0.5
+}
