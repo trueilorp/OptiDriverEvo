@@ -112,18 +112,22 @@ def dump_best_populations(best_pops, logbook):
             sheet['B' + str(num_of_driver + 1)] = driver.id_driver
             sheet['C' + str(num_of_driver + 1)] = driver.fitness.values[0]
             sheet['D' + str(num_of_driver + 1)] = driver.fitness.values[1]
-    
+
+            nuovo_file.save(path_file_to_store) 
+
             colonna_parametri = 13
             #Scrivo i parametri del mio driver
             for params in driver.parameters:
                 cella = sheet.cell(row=num_of_driver+1, column=colonna_parametri)  
                 cella.value = float(params)
                 colonna_parametri += 1  # Passa alla colonna successiva per il prossimo parametro
-            
+        
             num_of_driver += 1
-            
+
+        nuovo_file.save(path_file_to_store)   
+         
         # Recupera il record per la generazione desiderata
-        target_generation = num_of_pop - 1  # Generazione desiderata
+        target_generation = num_of_pop # Generazione desiderata
         # Trova il dizionario associato alla generazione desiderata
         record_generation = None
         for generation_data in logbook:
@@ -143,6 +147,7 @@ def dump_best_populations(best_pops, logbook):
         sheet['L' + str(num_of_driver)] = std_lo
 
         num_of_pop += 1
+        nuovo_file.save(path_file_to_store)
             
     nuovo_file.save(path_file_to_store)
     nuovo_file.close()

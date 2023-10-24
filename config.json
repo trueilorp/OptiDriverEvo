@@ -4,7 +4,7 @@
     "rdbOutputFolder": "rdbSnifferOutputs",
     "secondsBetweenProcesses": "3",
     "simulationTimeoutMinutes": "5",
-    "numberOfGenerations": 1,
+    "numberOfGenerations": 50,
     "numberOfIndividuals": 4,
     "numberOfGens" : 22,
     "boundLow" : 0.0,

@@ -10,30 +10,36 @@ from itertools import chain
 from operator import attrgetter
 import random
 
-######################################
-# GA MUTATION                      #
-######################################
+###############
+# GA MUTATION #
+###############
+
+######################
+# PARAMETERS TO MUTATE:
+# DesiredVelocity, DesiredAcceleration, DesiredDeceleration, 
+# CurveBehavior, ObserveSpeedLimits, LaneKeeping, SpeedKeeping
+#######################
 
 def mutate_individual(driver):
-    lista_geni =  driver.parameters
-    intervalli = [(0, 0), (1, 1), (2, 2), (3, 3), (6, 6), (7, 7), (8, 8), (13, 13)]
-    intervallo_scelto = random.choice(intervalli)
-    inizio, fine = intervallo_scelto
-    indice_gene_da_modificare = random.randint(inizio,fine) #scegli indice gene da mutare
-    if 17 <= indice_gene_da_modificare <= 21:
-        if lista_geni[indice_gene_da_modificare] == "1":
-            lista_geni[indice_gene_da_modificare] = "0"
+    gens =  driver.parameters
+    range = [(0, 0), (1, 1), (2, 2), (3, 3), (4, 4), (6, 6), (7, 7)]
+    choose_range = random.choice(range)
+    low_bound, upper_bound = choose_range
+    gen_to_modify_index = random.randint(low_bound,upper_bound)
+    if 17 <= gen_to_modify_index <= 21:
+        if gens[gen_to_modify_index] == "1":
+            gens[gen_to_modify_index] = "0"
         else:
-            lista_geni[indice_gene_da_modificare] = "1"
+            gens[gen_to_modify_index] = "1"
     else:
-        valore_di_modifica = 0
-        valore_modificato = valore_di_modifica + float(lista_geni[indice_gene_da_modificare])
-        while (valore_di_modifica == 0) or (valore_modificato < 0 or valore_modificato > 1): #per evitare che sia zero o che sfori 
-            valore_di_modifica = round(random.uniform(-0.5, 0.5),2) #scelgo un valore di modifica che sta tra -0,1 e 0,1
-            valore_modificato = valore_di_modifica + float(lista_geni[indice_gene_da_modificare])
+        value_to_modify = 0
+        value_modified = value_to_modify + float(gens[gen_to_modify_index])
+        while (value_to_modify == 0) or (value_modified < 0 or value_modified > 1): #per evitare che sia zero o che sfori 
+            value_to_modify = round(random.uniform(-0.5, 0.5),2) #scelgo un valore di modifica che sta tra -0,1 e 0,1
+            value_modified = value_to_modify + float(gens[gen_to_modify_index])
         
-        lista_geni[indice_gene_da_modificare] = "{:.2f}".format(valore_modificato) #modifico il parametro
-    return lista_geni
+        gens[gen_to_modify_index] = "{:.2f}".format(value_modified) #modifico il parametro
+    return gens
 
 
 ######################################

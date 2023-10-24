@@ -172,7 +172,7 @@ if __name__ == "__main__":
         elif sim_config["methodOfSimulation"] == "Random":
             best_populations = pop_based_random()
     except KeyError:
-        print("La chiave 'methodOfSimulation' non è presente nel dizionario.")
+        print("Key 'methodOfSimulation' is not in file sim_conf.json")
     
     dumpPopulation.dump_best_populations(best_populations, logbook) 
 

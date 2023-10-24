@@ -1,10 +1,10 @@
 {         
     "Simone_Dario_SD_A4_2009_black": {
-        "scenarioFile": "SD_Scenario.xml", 
+        "scenarioFile": "ScenarioDefinitivo.xml", 
         "driverConfigName": "DRIVER",
         "initialDriver": "DefaultDriver",
-        "methodOfSimulation" : "Random"
+        "methodOfSimulation" : "NSGA2"
     }
 }
 
- 
+  
