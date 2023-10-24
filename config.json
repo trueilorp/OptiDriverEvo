@@ -4,7 +4,7 @@
     "rdbOutputFolder": "rdbSnifferOutputs",
     "secondsBetweenProcesses": "3",
     "simulationTimeoutMinutes": "5",
-    "numberOfIterations": 5,
+    "numberOfIterations": 200,
     "maxTravelTime" : 100,
     "minTravelTime" : 0,
     "maxLaneOffset" : 182.5,

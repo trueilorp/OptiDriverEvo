@@ -1,9 +1,9 @@
 {         
     "Simone_Dario_Audi_A4_2009_black": {
-        "scenarioFile": "SD_Scenario_forma_a_infinito.xml", 
+        "scenarioFile": "ScenarioDefinitivo.xml", 
         "driverConfigName": "DRIVER",
         "initialDriver": "DefaultDriver",
-        "methodOfSimulation" : "Absolute"
+        "methodOfSimulation" : "Gaussian"
     }
 }
 
