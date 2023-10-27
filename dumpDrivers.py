@@ -2,6 +2,8 @@ from scipy.integrate import quad
 from openpyxl import Workbook
 from openpyxl import load_workbook
 import matplotlib.pyplot as plt
+import csv
+import pandas as pd
 import os, logging
 from os.path import dirname
 from dotenv import load_dotenv  #libreria che semplifica l'uso di variabili d'ambiente, carica da pyenv le variabili
@@ -9,7 +11,7 @@ load_dotenv()
 
 logging.getLogger('matplotlib').setLevel(logging.WARNING) 
 
-def build_header_file_csv(sheet):
+def build_header_excel():
     headers = [
         'Run/Drivers', 'TravelTime (s)', 'LaneOffset (cm)',
         'Total Fitness Function', 'Best driver',
@@ -21,9 +23,7 @@ def build_header_file_csv(sheet):
         'UseOfIndicator', 'ReactionTime', 'ObeyTrafficSigns',
         'ObeyTrafficLights', 'ObeyTrafficRules', 'Swarm', 'RouteAdherence'] 
 
-    for colonna, intestazione in enumerate(headers, start=1):
-        cella = sheet.cell(row=1, column=colonna)
-        cella.value = intestazione
+    return headers
          
 def get_grafico(run_values, y_values, tipo_grafico, dir_path):
     
@@ -34,7 +34,6 @@ def get_grafico(run_values, y_values, tipo_grafico, dir_path):
     if not os.path.exists(cartella):
             os.makedirs(cartella)
     
-    # Visualizza la funzione gaussiana
     plt.plot(run_values, y_values)
     plt.title('Funzione Gaussiana')
     plt.xlabel('Run')
@@ -47,21 +46,16 @@ def get_grafico(run_values, y_values, tipo_grafico, dir_path):
 
     plt.close()
 
-def get_path_csv():
-    # Specifica il percorso della directory principale
+def get_path_excel():
     directory_path = '/home/udineoffice/Desktop/OptiDriverEvo_OnePlusOne/outputs'
 
-    # Ottieni una lista di tutte le cartelle nella directory principale
     folders = [folder for folder in os.listdir(directory_path) if os.path.isdir(os.path.join(directory_path, folder))]
 
-    # Ordina le cartelle per data di creazione, con la più recente in cima
     folders.sort(key=lambda x: os.path.getctime(os.path.join(directory_path, x)), reverse=True)
 
-    # Prendi la prima cartella (la più recente)
     if folders:
         most_recent_folder = folders[0]
         
-        # Costruisci il percorso completo del file da memorizzare
         file_to_store = os.path.join(directory_path, most_recent_folder, 'Results_of_simulations.xlsx')
         dir_path = os.path.join(directory_path, most_recent_folder)
         print(file_to_store)
@@ -69,11 +63,46 @@ def get_path_csv():
     return file_to_store, dir_path
 
 def dump_drivers(drivers, best_drivers):
+    path_file_to_store, dir_path = get_path_excel()
+    drivers_to_append = []
+    for driver, best_driver in zip(drivers, best_drivers):
+        row_driver_to_append = [driver.id_driver, driver.time_sim, driver.lane_offset, driver.total_fitness_function, best_driver.id_driver]
+        for param in driver.parameters:
+            row_driver_to_append.append(float(param))
+        drivers_to_append.append(row_driver_to_append)       
+          
+    with open(os.path.join(dir_path,'driver_temp.csv'), 'a', newline='\n') as file_csv:
+        writer = csv.writer(file_csv)
+        writer.writerows(drivers_to_append)
+        writer.writerow('\n')
 
-    valori_run = []
-    valori_time_sim = []
-    valori_lane_offset = []
-    valori_fitness_function = []
+def write_drivers_in_excel():
+    path_file_to_store, dir_path = get_path_excel()
+    with open(os.path.join(dir_path,'driver_temp.csv'), 'r') as file_csv:
+        csv_reader = csv.reader(file_csv)
+        data = []
+        sheet_counter = 2
+        with pd.ExcelWriter(path_file_to_store, engine='xlsxwriter') as writer:
+            for row in csv_reader:
+                if not any(row) or row == ['\n']:
+                    if data:                        
+                        df = pd.DataFrame(data)
+                        df.to_excel(writer, sheet_name=f'Sim_{sheet_counter}', index=False, header=build_header_excel())
+                        data = []
+                        sheet_counter += 1
+                else:
+                    float_row = [float(column) for column in row]
+                    data.append(float_row)
+
+    #delete temp file
+    os.remove(os.path.join(dir_path,'driver_temp.csv'))
+
+'''def dump_drivers(drivers, best_drivers):
+
+    run_values = []
+    time_sim_values = []
+    lane_offset_values = []
+    fitness_function_values = []
 
     path_file_to_store, dir_path = get_path_csv()
 
@@ -104,13 +133,13 @@ def dump_drivers(drivers, best_drivers):
 
     for driver, best_driver in zip(drivers, best_drivers):
         
-        valori_run.append(num_of_run)
+        run_values.append(num_of_run)
         time_sim = driver.time_sim
-        valori_time_sim.append(time_sim)
+        time_sim_values.append(time_sim)
         lane_offset = driver.lane_offset
-        valori_lane_offset.append(lane_offset)
+        lane_offset_values.append(lane_offset)
         fitness_function = driver.total_fitness_function
-        valori_fitness_function.append(fitness_function)
+        fitness_function_values.append(fitness_function)
 
         #Scrivo i valori del mio driver
         sheet['A' + str(num_of_run + 1)] = driver.id_driver
@@ -129,7 +158,7 @@ def dump_drivers(drivers, best_drivers):
         num_of_run += 1
         nuovo_file.save(path_file_to_store)
     
-    nuovo_file.close()
+    nuovo_file.close()'''
    
     #get_grafico(valori_run, valori_time_sim, "time simulation", dir_path)
     #get_grafico(valori_run, valori_lane_offset, "lane offset", dir_path)

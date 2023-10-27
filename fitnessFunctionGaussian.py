@@ -2,7 +2,6 @@ from scipy.integrate import quad
 from openpyxl import Workbook
 from openpyxl import load_workbook
 import numpy as np
-import copy
 from os.path import dirname
 from dotenv import load_dotenv  #libreria che semplifica l'uso di variabili d'ambiente, carica da pyenv le variabili
 load_dotenv()
@@ -11,14 +10,12 @@ def gaussian(x, mean, std_dev):
     return 1 / (std_dev * np.sqrt(2 * np.pi)) * np.exp(-((x - mean) ** 2) / (2 * std_dev ** 2))
 
 def get_normalize_values(ff_values):
-
+    
     normalized_values = [] 
 
     #https://stackoverflow.com/questions/40137244/why-does-quad-return-both-zeros-when-integrating-a-simple-gaussian-pdf-at-a-very
     mean = np.mean(ff_values)
     std = np.std(ff_values)
-    print("MEDIA " + str(mean)) 
-    print("DEVIAZIONE STD " + str(std))
 
     for ff_value in ff_values:
         integral, _ = quad(gaussian, -1, ff_value, args=(mean, std), points=[-1*np.sqrt(std), 1*np.sqrt(std)])
@@ -46,12 +43,8 @@ def get_ff_normalize(drivers):
 
     norm_time_sims = get_normalize_values(valori_parziali_ts)
     norm_lane_offs = get_normalize_values(valori_parziali_lo)
-
-    '''print("\nTIMESIM")
-    print("\nLANEOFFSET")'''
      
     fitness_functions = [ts + lo for ts, lo in zip(norm_time_sims, norm_lane_offs)]
-    print("\nFITNESS FUNCTION " + str(fitness_functions))
     return fitness_functions #lista di tutte le fitness 
 
 def can_calculate_ff(drivers_runs):

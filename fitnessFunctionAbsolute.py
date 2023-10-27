@@ -23,7 +23,6 @@ def get_normalized_lo(driver_off):
     
 def calculate_fitness_function(driver_offspring):   
     fitness_function = get_normalized_ts(driver_offspring) + get_normalized_lo(driver_offspring)
-    print("\nFITNESS FUNCTION " + str(fitness_function))
     driver_offspring.total_fitness_function = fitness_function
 
 

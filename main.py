@@ -1,8 +1,4 @@
-import startVTDSimulation_SimoneDario
-import algoritmoGenetico
-import dumpDrivers
-import driver
-import fitnessFunctionAbsolute, fitnessFunctionGaussian
+import dumpDrivers, algoritmoGenetico, driver, startVTDSimulation_SimoneDario, fitnessFunctionAbsolute, fitnessFunctionGaussian
 import json, logging, datetime
 from dotenv import load_dotenv 
 load_dotenv()
@@ -56,7 +52,7 @@ def one_plus_one_absolute():
     best_drivers.append(driver_parent)
     num_run += 1
     tot_runs = get_number_of_runs()
-   
+    
     while (num_run <= tot_runs):
         
         print('\nSIMULATION NUMBER ' + str(num_run) + '\n')
@@ -151,6 +147,8 @@ if __name__ == "__main__":
       + str(driver_parent.time_sim) + str('\nMax lane offset: ')  + str(driver_parent.lane_offset) 
       + str('\nFitness function: ')  + str(driver_parent.total_fitness_function))
     
+    dumpDrivers.write_drivers_in_excel()
+
     duration = datetime.datetime.now() - time_beginning_of_program
     print('\n\nTOTAL TIME ELAPSED -> ' + "{:.2f}".format(duration.total_seconds()/60) + 'min')
     print("\nALL DONE!")
