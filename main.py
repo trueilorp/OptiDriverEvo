@@ -61,7 +61,7 @@ logbook = tools.Logbook()
 
 def pop_based_NSGA2():
 
-    num_generations = 1
+    num_generations = 0
     best_populations = []
 
     population = toolbox.population(MU) 

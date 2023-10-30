@@ -3,8 +3,8 @@
         "scenarioFile": "ScenarioDefinitivo.xml", 
         "driverConfigName": "DRIVER",
         "initialDriver": "DefaultDriver",
-        "methodOfSimulation" : "NSGA2"
+        "methodOfSimulation" : "Random"
     }
 }
 
-  
+    

@@ -127,7 +127,7 @@ def dump_best_populations(best_pops, logbook):
         nuovo_file.save(path_file_to_store)   
          
         # Recupera il record per la generazione desiderata
-        target_generation = num_of_pop # Generazione desiderata
+        target_generation = num_of_pop - 1 # Generazione desiderata
         # Trova il dizionario associato alla generazione desiderata
         record_generation = None
         for generation_data in logbook:
