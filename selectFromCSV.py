@@ -87,12 +87,10 @@ def get_max_lane_offset_from_csv(csv_file):
     valore_max_lane_offset = max(lane_offset_column_float_absolute)
 
     #controllo per valori sballati causa RDB 
-    if (valore_max_lane_offset*100) >= 200:
+    if (valore_max_lane_offset*100) >= 100:
         lane_offset_column_float_absolute = sorted(lane_offset_column_float_absolute)
         valore_max_lane_offset = lane_offset_column_float_absolute[-2]
     #if check_out_of_lane(valore_max_lane_offset): #e' in corsia 
     return valore_max_lane_offset * 100 #trasfomo in cm 
     #else:
     #    return -1
-    
-

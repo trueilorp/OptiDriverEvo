@@ -5,8 +5,8 @@
     "secondsBetweenProcesses": "3",
     "simulationTimeoutMinutes": "5",
     "numberOfIterations": 200,
-    "maxTravelTime" : 100,
-    "minTravelTime" : 0,
-    "maxLaneOffset" : 182.5,
+    "maxTravelTime" : 316.732,
+    "minTravelTime" : 115.948,
+    "maxLaneOffset" : 91.25,
     "minLaneOffset" : 0
 }

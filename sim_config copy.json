@@ -1,0 +1,35 @@
+
+{
+    "Simone_Dario_Audi_A4_2009_black": {
+        "scenarioFile": "ScenarioDefinitivo.xml", 
+        "driverConfigName": "DRIVER",
+        "initialDriver": "HastyDriver",
+        "methodOfSimulation" : "Gaussian"
+    },
+
+    "Simone_Dario_Audi_A4_2009_black": {
+        "scenarioFile": "SD_Scenario_forma_a_infinito.xml", 
+        "driverConfigName": "DRIVER",
+        "initialDriver": "HastyDriver",
+        "methodOfSimulation" : "Absolute"
+    },
+
+    "Simone_Dario_Audi_A4_2009_black": {
+        "scenarioFile": "SmartDb2014NoSnow_ShortPath.xml", 
+        "driverConfigName": "DRIVER",
+        "initialDriver": "HastyDriver",
+        "methodOfSimulation" : "Gaussian"
+    },
+
+    "MaxMinDefault": {
+    "maxTravelTime" : 100,
+    "minTravelTime" : 0,
+    "maxLaneOffset" : 91.25,
+    "minLaneOffset" : 0,
+
+    minPB : 132.68 - 10% (300 - 132.68)---> 115.948
+    maxPB : 300 + 10x% (300 - 132.68)  ---> 316.732
+    }
+
+    
+}
