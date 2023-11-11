@@ -1,17 +1,11 @@
-import random, simulate, json, logging, dumpPopulation, algoritmoGenetico, numpy as np, matplotlib as plt, datetime
+import random, simulate, json, logging, dumpPopulation, algoritmoGenetico, numpy as np, datetime
 from deap import base, creator, tools 
 from math import sqrt
 from driver import Driver
-from deap import algorithms
 from deap import base
-from deap.benchmarks.tools import diversity, convergence, hypervolume
 from deap import creator
 from deap import tools
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
-
-# how to plot Pareto Front:
-# https://notebook.community/locie/locie_notebook/ml/multiobjective_optimization
-
 
 def get_ga_costants():
     with open('/home/udineoffice/Desktop/OptiDriverEvo_PopulationBased/config.json', 'r') as file:
@@ -60,13 +54,11 @@ stats.register("std", np.std, axis=0)
 logbook = tools.Logbook()
 
 def pop_based_NSGA2():
-
     num_generations = 0
     best_populations = []
 
     population = toolbox.population(MU) 
     Driver.set_id_drivers(population, 0, num_generations)
-
     best_populations.append(population)
 
     for indice, individuo in enumerate(population):
@@ -94,27 +86,22 @@ def pop_based_NSGA2():
             toolbox.mutate(ind2)
             del ind1.fitness.values, ind2.fitness.values
            
-        # Evaluate the individuals with an invalid fitness
-        for ind in offspring:
+        for ind in offspring: #evaluate the individuals with an invalid fitness
             if not ind.fitness.valid:
                 evaluate(ind, num_runs) 
                 num_runs += 1
 
-        # Select the next generation population
-        new_population = population + offspring
+        new_population = population + offspring #select the next generation population
         population = algoritmoGenetico.selNSGA2(new_population, MU)
-
         best_populations.append(population)
 
-        # Update the statistics with the new population
-        record = stats.compile(population)
+        record = stats.compile(population) #update the statistics with the new population
         logbook.record(gen=num_generations, evals=len(new_population), **record)
         num_generations += 1       
     
     return best_populations
 
 def pop_based_random():
-
     num_generations = 0
     best_populations = []
     population = toolbox.population(MU)  
@@ -142,27 +129,23 @@ def pop_based_random():
             toolbox.mutate(ind2)
             del ind1.fitness.values, ind2.fitness.values
            
-        # Evaluate the individuals with an invalid fitness
-        for ind in offspring:
+        
+        for ind in offspring: #evaluate the individuals with an invalid fitness
             if not ind.fitness.valid:
                 evaluate(ind, num_runs) 
                 num_runs += 1
 
-        # Select the next generation population
-        population = offspring
-
+        population = offspring #select the next generation population
         best_populations.append(population) 
 
-        # Update the statistics with the new population
-        record = stats.compile(population)
+        record = stats.compile(population) #update the statistics with the new population
         logbook.record(gen=num_generations, evals=len(population), **record)
         num_generations += 1       
     
     return best_populations
 
-if __name__ == "__main__":
-    
-    time_beginning_of_program = datetime.datetime.now() #prendo il tempo di inizio programma 
+if __name__ == "__main__":    
+    time_beginning_of_program = datetime.datetime.now()
     with open('/home/udineoffice/Desktop/OptiDriverEvo_PopulationBased/sim_config.json', 'r') as file:
         method_simulation = json.load(file)
         sim_config = method_simulation.get('Simone_Dario_SD_A4_2009_black', {})
@@ -175,8 +158,6 @@ if __name__ == "__main__":
         print("Key 'methodOfSimulation' is not in file sim_conf.json")
     
     dumpPopulation.dump_best_populations(best_populations, logbook) 
-
     duration = datetime.datetime.now() - time_beginning_of_program
     print('\n\nTOTAL TIME ELAPSED -> ' + "{:.2f}".format(duration.total_seconds()/60) + 'min')
     print("ALL DONE!")
-

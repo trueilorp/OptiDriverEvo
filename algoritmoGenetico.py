@@ -25,7 +25,7 @@ def mutate_individual(driver):
     range = [(0, 0), (1, 1), (2, 2), (3, 3), (4, 4), (6, 6), (7, 7)]
     choose_range = random.choice(range)
     low_bound, upper_bound = choose_range
-    gen_to_modify_index = random.randint(low_bound,upper_bound)
+    gen_to_modify_index = random.randint(low_bound, upper_bound)
     if 17 <= gen_to_modify_index <= 21:
         if gens[gen_to_modify_index] == "1":
             gens[gen_to_modify_index] = "0"
@@ -34,17 +34,17 @@ def mutate_individual(driver):
     else:
         value_to_modify = 0
         value_modified = value_to_modify + float(gens[gen_to_modify_index])
-        while (value_to_modify == 0) or (value_modified < 0 or value_modified > 1): #per evitare che sia zero o che sfori 
-            value_to_modify = round(random.uniform(-0.5, 0.5),2) #scelgo un valore di modifica che sta tra -0,1 e 0,1
+        while (value_to_modify == 0) or (value_modified < 0 or value_modified > 1):
+            value_to_modify = round(random.uniform(-0.5, 0.5),2) 
             value_modified = value_to_modify + float(gens[gen_to_modify_index])
         
-        gens[gen_to_modify_index] = "{:.2f}".format(value_modified) #modifico il parametro
+        gens[gen_to_modify_index] = "{:.2f}".format(value_modified)
     return gens
 
 
-######################################
-# GA CROSSOVER                      #
-######################################
+################
+# GA CROSSOVER #
+################
 
 def crossover_gens(ind1, ind2, eta, low, up):
     """Executes a simulated binary crossover that modify in-place the input
@@ -77,8 +77,6 @@ def crossover_gens(ind1, ind2, eta, low, up):
         gens_ind1 = ind1.parameters
         gens_ind2 = ind2.parameters
         if random.random() <= 0.5:
-            # This epsilon should probably be changed for 0 since
-            # floating point arithmetic in Python is safer
             if abs(float(gens_ind1[i]) - float(gens_ind2[i])) > 1e-14:
                 x1 = min(float(gens_ind1[i]), float(gens_ind2[i]))
                 x2 = max(float(gens_ind1[i]), float(gens_ind2[i]))
@@ -230,14 +228,13 @@ def assignCrowdingDist(individuals):
         return
 
     distances = [0.0] * len(individuals)
-    crowd = [(ind.fitness.values, i) for i, ind in enumerate(individuals)] #crea una lista di tuple (indice, fitnessFunction)
-    #print("CROWD: " + str(crowd))
+    crowd = [(ind.fitness.values, i) for i, ind in enumerate(individuals)]
     nobj = len(individuals[0].fitness.values)
 
     for i in range(nobj):
-        crowd.sort(key=lambda element: element[0][i]) #errore qui
-        distances[crowd[0][1]] = float("inf") #minimo
-        distances[crowd[-1][1]] = float("inf") #massimo
+        crowd.sort(key=lambda element: element[0][i]) 
+        distances[crowd[0][1]] = float("inf") 
+        distances[crowd[-1][1]] = float("inf") 
         if crowd[-1][0][i] == crowd[0][0][i]:
             continue
         norm = nobj * float(crowd[-1][0][i] - crowd[0][0][i])
@@ -273,7 +270,6 @@ def selTournamentDCD(individuals, k):
     if k == len(individuals) and k % 4 != 0:
         raise ValueError("selTournamentDCD: k must be divisible by four if k == len(individuals)")
 
-    #qui faccio i confronti tenendo conto di chi domina e delle crowding distace
     def tourn(ind1, ind2):
         if ind1.fitness.dominates(ind2.fitness):
             return ind1
@@ -311,7 +307,7 @@ def select_random_individuals(individuals, k):
     :return: Una lista di k individui selezionati casualmente.
     """
     if k > len(individuals):
-        k = len(individuals)  # Evita di selezionare più individui di quanti ne siano disponibili
+        k = len(individuals) 
 
     random_selection = random.sample(individuals, k)
     

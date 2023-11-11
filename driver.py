@@ -1,4 +1,4 @@
-from dotenv import load_dotenv  #libreria che semplifica l'uso di variabili d'ambiente, carica da pyenv le variabili
+from dotenv import load_dotenv 
 load_dotenv()
 
 class Driver:   
