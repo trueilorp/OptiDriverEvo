@@ -35,7 +35,6 @@ def simulate(driver, num_runs):
 
 def one_plus_one_absolute():
     num_run = 1 
-
     drivers_runs = []
     best_drivers = []
 
@@ -53,12 +52,10 @@ def one_plus_one_absolute():
     num_run += 1
     tot_runs = get_number_of_runs()
     
-    while (num_run <= tot_runs):
-        
+    while (num_run <= tot_runs):      
         print('\nSIMULATION NUMBER ' + str(num_run) + '\n')
-
-        offspring_parameters = algoritmoGenetico.mutate(driver_parent) #mutate driver paramters
-        driver_offspring = driver.Driver(num_run, offspring_parameters) #instatiate new offspring driver 
+        offspring_parameters = algoritmoGenetico.mutate(driver_parent)
+        driver_offspring = driver.Driver(num_run, offspring_parameters) 
 
         print("Starting VTD Script")
         time_sim, max_lane_offset = simulate(driver_offspring, num_run) 
@@ -76,9 +73,7 @@ def one_plus_one_absolute():
     return driver_parent
 
 def one_plus_one_gaussian():
-
     num_run = 1 
-
     drivers_runs = []
     best_drivers = [] 
 
@@ -98,9 +93,8 @@ def one_plus_one_gaussian():
     while (num_run <= tot_runs):
         
         print('\nSIMULATION NUMBER ' + str(num_run) + '\n')
-
-        offspring_parameters = algoritmoGenetico.mutate(driver_parent) #mutate driver paramters
-        driver_offspring = driver.Driver(num_run, offspring_parameters) #instatiate new offspring driver 
+        offspring_parameters = algoritmoGenetico.mutate(driver_parent) 
+        driver_offspring = driver.Driver(num_run, offspring_parameters) 
 
         print("Starting VTD Script")
         time_sim, max_lane_offset = simulate(driver_offspring, num_run) 
@@ -148,7 +142,6 @@ if __name__ == "__main__":
       + str('\nFitness function: ')  + str(driver_parent.total_fitness_function))
     
     dumpDrivers.write_drivers_in_excel()
-
     duration = datetime.datetime.now() - time_beginning_of_program
     print('\n\nTOTAL TIME ELAPSED -> ' + "{:.2f}".format(duration.total_seconds()/60) + 'min')
     print("\nALL DONE!")

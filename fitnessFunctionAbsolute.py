@@ -3,7 +3,7 @@ from openpyxl import Workbook
 from openpyxl import load_workbook
 import numpy as np, json
 from os.path import dirname
-from dotenv import load_dotenv  #libreria che semplifica l'uso di variabili d'ambiente, carica da pyenv le variabili
+from dotenv import load_dotenv  
 load_dotenv()
 
 def get_max_min_absolute():

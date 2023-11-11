@@ -2,7 +2,7 @@
     "Simone_Dario_Audi_A4_2009_black": {
         "scenarioFile": "ScenarioDefinitivo.xml", 
         "driverConfigName": "DRIVER",
-        "initialDriver": "DefaultDriver",
+        "initialDriver": "HastyDriver",
         "methodOfSimulation" : "Absolute"
     }
 }
